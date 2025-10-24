@@ -227,7 +227,7 @@ class ThompsonSampler:
         return max(samples.items(),key=lambda x:x[1])[0]
     
     def update(self,action:str,reward:float):
-        """報酬でBeta分布を更新"""
+        """Beta分布を更新"""
         if reward>0.5:
             self.alpha[action].append(reward)
         else:
@@ -565,7 +565,7 @@ class TreeOfThoughts:
             node=self.nodes[current_id]
             if not node.children:break
             
-            # 最も価値の高い子を選択
+            # 最も価値の高いものを選択
             best_child_id=max(
                 node.children,
                 key=lambda cid:self.nodes[cid].value/max(self.nodes[cid].visits,1)
@@ -723,8 +723,6 @@ class UltraAdvancedLLM:
         self.memory=LongTermMemory()if self.cfg.memory else None
         self.kg=KnowledgeGraph()if self.cfg.kg else None
         self.context_window:deque=deque(maxlen=15)
-        
-        # 高度な機能
         self.model_stats={m:ModelStats(name=m)for m in self.MODELS.keys()}
         self.total_pulls=0
         self.thompson=ThompsonSampler(list(self.MODELS.keys()))if self.cfg.thompson else None
@@ -741,7 +739,7 @@ class UltraAdvancedLLM:
         # アンサンブル
         self.ensemble_history:List[Dict]=[]
         
-        # Ultra-advanced components
+        # advanced components
         self.tot:Optional[TreeOfThoughts]=TreeOfThoughts()if self.cfg.tree_of_thoughts else None
         self.debate:Optional[DebateSystem]=DebateSystem()if self.cfg.debate else None
         self.critic:Optional[CriticSystem]=CriticSystem()if self.cfg.critic else None
@@ -927,7 +925,7 @@ class UltraAdvancedLLM:
         """Chain-of-Thought プロンプト構築"""
         templates=[t for t in self.prompt_templates if t.category=="reasoning"]
         if templates:
-            # 最高性能のテンプレートを選択
+            # テンプレートを選択
             best=max(templates,key=lambda t:t.success_rate)
             best.usage_count+=1
             cot_instruction=best.template
@@ -1017,7 +1015,7 @@ Improved Answer:"""
             # フォールバック
             return await self._execute_direct(query,self.cfg.model,temp,max_tok)
         
-        # 最高信頼度の応答を選択
+        # 応答を選択
         best=max(responses,key=lambda r:r.conf)
         best.strategy=Strategy.ENSEMBLE
         best.alternatives=[r.text[:100]for r in responses if r!=best]
@@ -1210,7 +1208,7 @@ Improved Answer:"""
         )
     
     def _build_advanced_prompt(self,query:str,intent:Intent,complexity:Complexity)->str:
-        """超高度な適応的システムプロンプト"""
+        """適応的システムプロンプト"""
         if not self.cfg.adapt:return "You are a helpful assistant."
         
         base="You are an advanced AI assistant with deep expertise."
@@ -1396,7 +1394,7 @@ Improved Answer:"""
     def q(self,p,**kw)->Resp:return asyncio.run(self.qa(p,**kw))
     
     def add_feedback(self,query:str,response:str,rating:int,resp_obj:Resp=None):
-        """高度なフィードバック処理"""
+        """フィードバック処理"""
         if self.cfg.adapt:
             intent=resp_obj.intent if resp_obj else None
             complexity=resp_obj.complexity if resp_obj else None
@@ -1549,7 +1547,7 @@ Improved Answer:"""
                 })
             base_stats['ab_tests']=ab_stats
         
-        # Ultra-advanced stats
+        # advanced stats
         if self.calibrator:
             base_stats['calibration']={
                 'ece':f"{self.calibrator.get_calibration_error():.3f}",
@@ -1723,7 +1721,7 @@ Improved Answer:"""
 
 # ========== インタラクティブチャット ==========
 class InteractiveChat:
-    """高度なインタラクティブチャットインターフェース"""
+    """インタラクティブチャットインターフェース"""
     
     def __init__(self,llm:UltraAdvancedLLM):
         self.llm=llm
