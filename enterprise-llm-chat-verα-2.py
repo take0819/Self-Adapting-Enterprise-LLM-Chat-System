@@ -516,7 +516,7 @@ class VDB:
         qe=self._e(q);rs=[(i,np.dot(qe,e),m)for i,e,m in self.v if np.dot(qe,e)>=threshold]
         rs.sort(key=lambda x:x[1],reverse=True);return rs
 
-# ========== 高度なシステムコンポーネント ==========
+# ========== システムコンポーネント ==========
 class TreeOfThoughts:
     """Tree of Thoughts推論システム"""
     def __init__(self,max_depth:int=3,branching:int=3):
