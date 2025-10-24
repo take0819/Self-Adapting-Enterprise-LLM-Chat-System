@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Ultra-Advanced Self-Adapting Enterprise LLM Chat System
+Advanced Self-Adapting Enterprise LLM Chat System
 思考の連鎖・自己反省・知識グラフ・A/Bテスト・アンサンブル学習
 
 Features:
