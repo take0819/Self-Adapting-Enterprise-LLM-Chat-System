@@ -18,7 +18,7 @@ Features:
 使い方:
 1. export GROQ_API_KEY='your_key'
 2. pip install groq numpy
-3. python ultra-llm.py
+3. python enterprise-llm-chat-verα-2.py
 """
 
 import os,sys,time,json,hashlib,logging,asyncio,re,uuid,math,statistics
