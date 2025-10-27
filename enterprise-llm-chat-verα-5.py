@@ -2955,7 +2955,6 @@ class QuantumChat:
         # 介入シミュレーション
         print(f"\n💡 Intervention Simulation:")
         print(f"   If we intervene on '{event[:40]}...', we can expect:")
-        print    def handle_command(self, command: str) -> bool:
         """コマンド処理"""
         parts = command.strip().split()
         cmd = parts[0].lower()
@@ -3107,6 +3106,9 @@ class QuantumChat:
         
         elif cmd == '/benchmark':
             self._run_benchmark()
+            
+        else 
+        print(f"❌ Unknown command: {cmd}")
         
         # 介入シミュレーション
         print(f"\n💡 Intervention Simulation:")
@@ -3975,10 +3977,8 @@ class QuantumChat:
             print(f"   {i:2d}. {topic:20s} [{bar}] {percentage:5.1f}%")
         
         print(f"\n   Total Topics: {len(topics)}")
-        print("#!/usr/bin/env python3    
         
-        else:
-            print(f"❌ Unknown command: {cmd}")
+
             
     def run(self):
         """メインループ"""
