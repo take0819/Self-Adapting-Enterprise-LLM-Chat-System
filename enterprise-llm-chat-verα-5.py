@@ -1555,7 +1555,6 @@ class QuantumLLM:
         self.genetic_evolver = GeneticPromptEvolver(self.config.genetic) if self.config.genetic.enabled else None
         self.swarm = SwarmIntelligence(self.config.swarm) if self.config.swarm.enabled else None
         self.rlhf = RLHFTrainer(self.config.rlhf) if self.config.rlhf.enabled else None
-        self.hypothesis_tester = HypothesisTester() if self.config.hypothesis_testing else None
         
         # 究極のコンポーネント
         self.causal_engine = CausalInferenceEngine() if self.config.causal_reasoning else None
@@ -1627,8 +1626,6 @@ class QuantumLLM:
             features.append("🌊Swarm")
         if self.config.rlhf.enabled:
             features.append("🎯RLHF")
-        if self.config.hypothesis_testing:
-            features.append("🔬Hypothesis")
         if self.config.causal_reasoning:
             features.append("🧩Causal")
         if self.config.adversarial_testing:
