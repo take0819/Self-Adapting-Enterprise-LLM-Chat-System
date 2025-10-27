@@ -2769,18 +2769,50 @@ class QuantumChat:
         
         print("=" * 80 + "\n")
     
-    def handle_command(self, command: str) -> bool:
+    def _analyze_causality(self, event: str):
+        """因果関係分析"""
+        if not self.llm.causal_engine:
+            print("❌ Causal reasoning disabled")
+            return
+        
+        print("\n" + "=" * 80)
+        print(f"🧩 Causal Analysis: '{event}'")
+        print("=" * 80)
+        
+        # 原因を推論
+        causes = self.llm.causal_engine.infer_cause(event, depth=3)
+        
+        if causes:
+            print(f"\n🔍 Potential Causes:")
+            for i, (cause, prob) in enumerate(causes, 1):
+                bar = "█" * int(prob * 30) + "░" * (30 - int(prob * 30))
+                print(f"   {i:2d}. [{bar}] {prob:.2%} - {cause}")
+        else:
+            print("\n   No causal relationships found in knowledge base.")
+        
+        # 結果を予測
+        effects = self.llm.causal_engine.predict_effect(event, depth=3)
+        
+        if effects:
+            print(f"\n🔮 Potential Effects:")
+            for i, (effect, prob) in enumerate(effects, 1):
+                bar = "█" * int(prob * 30) + "░" * (30 - int(    def handle_command(self, command: str) -> bool:
         """コマンド処理"""
         parts = command.strip().split()
         cmd = parts[0].lower()
         
+        # ========== 基本コマンド ==========
         if cmd == '/exit':
             print("👋 Goodbye!")
             return False
         
+        elif cmd == '/help':
+            self.print_welcome()
+        
         elif cmd == '/stats':
             self.print_stats()
         
+        # ========== データ管理 ==========
         elif cmd == '/save':
             filepath = parts[1] if len(parts) > 1 else 'quantum_llm_state.json'
             self.llm.save_state(filepath)
@@ -2789,6 +2821,17 @@ class QuantumChat:
             filepath = parts[1] if len(parts) > 1 else 'quantum_llm_state.json'
             self.llm.load_state(filepath)
         
+        elif cmd == '/export':
+            self._export_data()
+        
+        elif cmd == '/clear':
+            self.history.clear()
+            self.llm.context_window.clear()
+            if self.llm.vector_db:
+                self.llm.vector_db.vectors.clear()
+            print("🗑️  All history cleared")
+        
+        # ========== 評価・学習 ==========
         elif cmd == '/feedback':
             if not self.history:
                 print("❌ No previous response to rate")
@@ -2803,59 +2846,109 @@ class QuantumChat:
                 last_query, last_response = self.history[-1]
                 self.llm.add_feedback(last_query, last_response.text, rating, last_response)
                 print(f"✅ Feedback recorded: {rating:+d}")
-            
             except ValueError:
                 print("❌ Invalid rating")
         
+        elif cmd == '/rate':
+            if not self.history:
+                print("❌ No previous response to rate")
+                return True
+            
+            try:
+                rating = int(parts[1]) if len(parts) > 1 else 3
+                if rating < 1 or rating > 5:
+                    print("❌ Rating must be between 1 and 5")
+                    return True
+                
+                # 5段階を-2~+2に変換
+                converted = rating - 3
+                last_query, last_response = self.history[-1]
+                self.llm.add_feedback(last_query, last_response.text, converted, last_response)
+                print(f"⭐ Rated: {rating}/5 stars")
+            except ValueError:
+                print("❌ Invalid rating")
+        
+        elif cmd == '/review':
+            self._show_feedback_history()
+        
+        elif cmd == '/improve':
+            self._show_improvements()
+        
+        # ========== 高度な機能 ==========
         elif cmd == '/quantum':
-            if self.llm.quantum_optimizer:
-                print("\n🔮 Quantum Optimization Status:")
-                print(f"   Enabled: Yes")
-                print(f"   Qubits: {self.llm.quantum_optimizer.num_qubits}")
-                print(f"   Iterations: {self.llm.quantum_optimizer.config.iterations}")
-                print(f"   Total Optimizations: {self.llm.metrics['quantum_optimizations']}")
-            else:
-                print("❌ Quantum optimization disabled")
+            self._show_quantum_info()
         
         elif cmd == '/genetic':
-            if self.llm.genetic_evolver:
-                print("\n🧬 Genetic Evolution Status:")
-                print(f"   Generation: {self.llm.genetic_evolver.generation}")
-                print(f"   Population: {len(self.llm.genetic_evolver.population)}")
-                best = self.llm.genetic_evolver.get_best_prompts(3)
-                if best:
-                    print(f"\n   Top 3 Prompts:")
-                    for i, prompt in enumerate(best, 1):
-                        print(f"   {i}. Fitness: {prompt.fitness:.3f} | {prompt.template[:50]}...")
-            else:
-                print("❌ Genetic evolution disabled")
+            self._show_genetic_info()
         
         elif cmd == '/swarm':
-            if self.llm.swarm:
-                print("\n🌊 Swarm Intelligence Status:")
-                print(f"   Agents: {len(self.llm.swarm.agents)}")
-                print(f"   Best Fitness: {self.llm.swarm.global_best_fitness:.3f}")
-                print(f"   Total Optimizations: {self.llm.metrics['swarm_optimizations']}")
-            else:
-                print("❌ Swarm intelligence disabled")
+            self._show_swarm_info()
+        
+        elif cmd == '/rlhf':
+            self._show_rlhf_info()
         
         elif cmd == '/kg':
-            if self.llm.knowledge_graph:
-                print("\n🧩 Knowledge Graph Status:")
-                print(f"   Nodes: {len(self.llm.knowledge_graph.nodes)}")
-                print(f"   Edges: {len(self.llm.knowledge_graph.edges)}")
-                
-                central = self.llm.knowledge_graph.get_central_nodes(5)
-                if central:
-                    print(f"\n   Central Nodes:")
-                    for node_id, degree in central:
-                        node = self.llm.knowledge_graph.nodes[node_id]
-                        print(f"   • {node.name} (degree: {degree})")
-            else:
-                print("❌ Knowledge graph disabled")
+            self._show_knowledge_graph()
         
-        elif cmd == '/help':
-            self.print_welcome()
+        elif cmd == '/hypothesis':
+            self._show_hypothesis_history()
+        
+        # ========== 表示・設定 ==========
+        elif cmd == '/history':
+            self._show_history()
+        
+        elif cmd == '/profile':
+            self._show_profile()
+        
+        elif cmd == '/config':
+            self._show_config()
+        
+        elif cmd == '/set':
+            if len(parts) < 3:
+                print("❌ Usage: /set <key> <value>")
+            else:
+                self._set_config(parts[1], parts[2])
+        
+        # ========== 分析・検索 ==========
+        elif cmd == '/analyze':
+            if len(parts) < 2:
+                print("❌ Usage: /analyze <text>")
+            else:
+                text = ' '.join(parts[1:])
+                self._analyze_text(text)
+        
+        elif cmd == '/search':
+            if len(parts) < 2:
+                print("❌ Usage: /search <query>")
+            else:
+                query = ' '.join(parts[1:])
+                self._search_knowledge(query)
+        
+        elif cmd == '/topics':
+            self._show_topics()
+        
+        elif cmd == '/insights':
+            self._generate_insights()
+        
+        # ========== 実験的機能 ==========
+        elif cmd == '/experiment':
+            if len(parts) < 2:
+                print("❌ Usage: /experiment <strategy>")
+                print("   Available: quantum, genetic, swarm, cot, debate")
+            else:
+                strategy = parts[1]
+                self._run_experiment(strategy)
+        
+        elif cmd == '/compare':
+            if len(parts) < 2:
+                print("❌ Usage: /compare <query>")
+            else:
+                query = ' '.join(parts[1:])
+                self._compare_strategies(query)
+        
+        elif cmd == '/benchmark':
+            self._run_benchmark()
+        
         elif cmd == '/debug':
             self._show_debug_info()
         
@@ -2913,7 +3006,7 @@ class QuantumChat:
         
         else:
             print(f"❌ Unknown command: {cmd}")
-            print("Type /help for available commands")
+            print("💡 Type /help for available commands")
         
         return True
     
@@ -3104,8 +3197,6 @@ class QuantumChat:
         elif cmd == '/benchmark':
             self._run_benchmark()
             
-        else 
-        print(f"❌ Unknown command: {cmd}")
         
         # 介入シミュレーション
         print(f"\n💡 Intervention Simulation:")
