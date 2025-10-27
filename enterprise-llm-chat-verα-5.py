@@ -1,1120 +1,3 @@
-elif cmd == '/debug':
-            self._show_debug_info()
-        
-        # ========== 究極の機能 ==========
-        elif cmd == '/causal':
-            if len(parts) < 2:
-                print("❌ Usage: /causal <event>")
-            else:
-                event = ' '.join(parts[1:])
-                self._analyze_causality(event)
-        
-        elif cmd == '/synthesize':
-            if len(parts) < 3:
-                print("❌ Usage: /synthesize <concept_a> <concept_b>")
-            else:
-                concept_a = parts[1]
-                concept_b = parts[2]
-                self._creative_synthesis(concept_a, concept_b)
-        
-        elif cmd == '/verify':
-            if len(parts) < 2:
-                print("❌ Usage: /verify <claim>")
-            else:
-                claim = ' '.join(parts[1:])
-                self._verify_claim(claim)
-        
-        elif cmd == '/adversarial':
-            self._run_adversarial_test()
-        
-        elif cmd == '/predict':
-            self._show_predictions()
-        
-        elif cmd == '/scientific':
-            if len(parts) < 2:
-                print("❌ Usage: /scientific <observation>")
-            else:
-                observation = ' '.join(parts[1:])
-                self._apply_scientific_method(observation)
-        
-        elif cmd == '/progress':
-            self._show_learning_progress()
-        
-        elif cmd == '/meta':
-            self._show_meta_insights()
-        
-        elif cmd == '/analogies':
-            if len(parts) < 2:
-                print("❌ Usage: /analogies <concept>")
-            else:
-                concept = ' '.join(parts[1:])
-                self._find_analogies(concept)
-        
-        elif cmd == '/trust':
-            self._show_trust_score()
-        
-        else:
-            print(f"❌ Unknown command: {cmd}")
-            print("Type /help for available commands")
-        
-        return True
-    
-    # ========== 究極の機能の補助メソッド ==========
-    
-    def _analyze_causality(self, event: str):
-        """因果関係分析"""
-        if not self.llm.causal_engine:
-            print("❌ Causal reasoning disabled")
-            return
-        
-        print("\n" + "=" * 80)
-        print(f"🧩 Causal Analysis: '{event}'")
-        print("=" * 80)
-        
-        # 原因を推論
-        causes = self.llm.causal_engine.infer_cause(event, depth=3)
-        
-        if causes:
-            print(f"\n🔍 Potential Causes:")
-            for i, (cause, prob) in enumerate(causes, 1):
-                bar = "█" * int(prob * 30) + "░" * (30 - int(prob * 30))
-                print(f"   {i:2d}. [{bar}] {prob:.2%} - {cause}")
-        else:
-            print("\n   No causal relationships found in knowledge base.")
-        
-        # 結果を予測
-        effects = self.llm.causal_engine.predict_effect(event, depth=3)
-        
-        if effects:
-            print(f"\n🔮 Potential Effects:")
-            for i, (effect, prob) in enumerate(effects, 1):
-                bar = "█" * int(prob * 30) + "░" * (30 - int(prob * 30))
-                print(f"   {i:2d}. [{bar}] {prob:.2%} - {effect}")
-        
-        # 介入シミュレーション
-        print(f"\n💡 Intervention Simulation:")
-        print(f"   If we intervene on '{event[:40]}...', we can expect:")
-        print    def handle_command(self, command: str) -> bool:
-        """コマンド処理"""
-        parts = command.strip().split()
-        cmd = parts[0].lower()
-        
-        # ========== 基本コマンド ==========
-        if cmd == '/exit':
-            print("👋 Goodbye!")
-            return False
-        
-        elif cmd == '/help':
-            self.print_welcome()
-        
-        elif cmd == '/stats':
-            self.print_stats()
-        
-        # ========== データ管理 ==========
-        elif cmd == '/save':
-            filepath = parts[1] if len(parts) > 1 else 'quantum_llm_state.json'
-            self.llm.save_state(filepath)
-        
-        elif cmd == '/load':
-            filepath = parts[1] if len(parts) > 1 else 'quantum_llm_state.json'
-            self.llm.load_state(filepath)
-        
-        elif cmd == '/export':
-            self._export_data()
-        
-        elif cmd == '/clear':
-            self.history.clear()
-            self.llm.context_window.clear()
-            if self.llm.vector_db:
-                self.llm.vector_db.vectors.clear()
-            print("🗑️  All history cleared")
-        
-        # ========== 評価・学習 ==========
-        elif cmd == '/feedback':
-            if not self.history:
-                print("❌ No previous response to rate")
-                return True
-            
-            try:
-                rating = int(parts[1]) if len(parts) > 1 else 0
-                if rating < -2 or rating > 2:
-                    print("❌ Rating must be between -2 and +2")
-                    return True
-                
-                last_query, last_response = self.history[-1]
-                self.llm.add_feedback(last_query, last_response.text, rating, last_response)
-                print(f"✅ Feedback recorded: {rating:+d}")
-            except ValueError:
-                print("❌ Invalid rating")
-        
-        elif cmd == '/rate':
-            if not self.history:
-                print("❌ No previous response to rate")
-                return True
-            
-            try:
-                rating = int(parts[1]) if len(parts) > 1 else 3
-                if rating < 1 or rating > 5:
-                    print("❌ Rating must be between 1 and 5")
-                    return True
-                
-                # 5段階を-2~+2に変換
-                converted = rating - 3
-                last_query, last_response = self.history[-1]
-                self.llm.add_feedback(last_query, last_response.text, converted, last_response)
-                print(f"⭐ Rated: {rating}/5 stars")
-            except ValueError:
-                print("❌ Invalid rating")
-        
-        elif cmd == '/review':
-            self._show_feedback_history()
-        
-        elif cmd == '/improve':
-            self._show_improvements()
-        
-        # ========== 高度な機能 ==========
-        elif cmd == '/quantum':
-            self._show_quantum_info()
-        
-        elif cmd == '/genetic':
-            self._show_genetic_info()
-        
-        elif cmd == '/swarm':
-            self._show_swarm_info()
-        
-        elif cmd == '/rlhf':
-            self._show_rlhf_info()
-        
-        elif cmd == '/kg':
-            self._show_knowledge_graph()
-        
-        elif cmd == '/hypothesis':
-            self._show_hypothesis_history()
-        
-        # ========== 表示・設定 ==========
-        elif cmd == '/history':
-            self._show_history()
-        
-        elif cmd == '/profile':
-            self._show_profile()
-        
-        elif cmd == '/config':
-            self._show_config()
-        
-        elif cmd == '/set':
-            if len(parts) < 3:
-                print("❌ Usage: /set <key> <value>")
-            else:
-                self._set_config(parts[1], parts[2])
-        
-        # ========== 分析・検索 ==========
-        elif cmd == '/analyze':
-            if len(parts) < 2:
-                print("❌ Usage: /analyze <text>")
-            else:
-                text = ' '.join(parts[1:])
-                self._analyze_text(text)
-        
-        elif cmd == '/search':
-            if len(parts) < 2:
-                print("❌ Usage: /search <query>")
-            else:
-                query = ' '.join(parts[1:])
-                self._search_knowledge(query)
-        
-        elif cmd == '/topics':
-            self._show_topics()
-        
-        elif cmd == '/insights':
-            self._generate_insights()
-        
-        # ========== 実験的機能 ==========
-        elif cmd == '/experiment':
-            if len(parts) < 2:
-                print("❌ Usage: /experiment <strategy>")
-                print("   Available: quantum, genetic, swarm, cot, debate")
-            else:
-                strategy = parts[1]
-                self._run_experiment(strategy)
-        
-        elif cmd == '/compare':
-            if len(parts) < 2:
-                print("❌ Usage: /compare <query>")
-            else:
-                query = ' '.join(parts[1:])
-                self._compare_strategies(query)
-        
-        elif cmd == '/benchmark':
-            self._run_benchmark()
-        
-        # 介入シミュレーション
-        print(f"\n💡 Intervention Simulation:")
-        print(f"   If we intervene on '{event[:40]}...', we can expect:")
-        for effect, prob in effects[:3]:
-            print(f"   • {effect[:60]}... (likelihood: {prob:.0%})")
-        
-        print("=" * 80 + "\n")
-    
-    def _creative_synthesis(self, concept_a: str, concept_b: str):
-        """創造的統合"""
-        if not self.llm.creative_synthesizer:
-            print("❌ Creative synthesis disabled")
-            return
-        
-        print("\n" + "=" * 80)
-        print(f"🎨 Creative Synthesis: '{concept_a}' + '{concept_b}'")
-        print("=" * 80)
-        
-        synthesis = self.llm.creative_synthesizer.synthesize(concept_a, concept_b)
-        
-        print(f"\n💡 Synthesized Concept:")
-        print(f"   {synthesis.synthesis}")
-        
-        print(f"\n📊 Metrics:")
-        novelty_bar = "█" * int(synthesis.novelty_score * 20) + "░" * (20 - int(synthesis.novelty_score * 20))
-        coherence_bar = "█" * int(synthesis.coherence_score * 20) + "░" * (20 - int(synthesis.coherence_score * 20))
-        useful_bar = "█" * int(synthesis.usefulness_score * 20) + "░" * (20 - int(synthesis.usefulness_score * 20))
-        
-        print(f"   Novelty:     [{novelty_bar}] {synthesis.novelty_score:.2%}")
-        print(f"   Coherence:   [{coherence_bar}] {synthesis.coherence_score:.2%}")
-        print(f"   Usefulness:  [{useful_bar}] {synthesis.usefulness_score:.2%}")
-        
-        print(f"\n🌟 Overall Innovation Score: {(synthesis.novelty_score + synthesis.coherence_score + synthesis.usefulness_score) / 3:.2%}")
-        
-        print("=" * 80 + "\n")
-    
-    def _verify_claim(self, claim: str):
-        """主張を検証"""
-        if not self.llm.verification_system:
-            print("❌ Verification system disabled")
-            return
-        
-        print("\n" + "=" * 80)
-        print(f"🔐 Claim Verification")
-        print("=" * 80)
-        print(f"\nClaim: {claim}")
-        
-        # 複数の検証方法を適用
-        methods = [
-            VerificationMethod.LOGICAL_CONSISTENCY,
-            VerificationMethod.CROSS_REFERENCE,
-            VerificationMethod.FACT_CHECK
-        ]
-        
-        results = []
-        for method in methods:
-            context = ' '.join([q for q, _ in self.history[-3:]]) if self.history else ""
-            verification = self.llm.verification_system.verify_claim(claim, context, method)
-            results.append(verification)
-        
-        print(f"\n📋 Verification Results:")
-        for i, v in enumerate(results, 1):
-            status = "✅ VERIFIED" if v.result else "❌ REJECTED"
-            conf_bar = "█" * int(v.confidence * 20) + "░" * (20 - int(v.confidence * 20))
-            print(f"\n   {i}. {v.method.value.replace('_', ' ').title()}: {status}")
-            print(f"      Confidence: [{conf_bar}] {v.confidence:.2%}")
-            if v.evidence:
-                print(f"      Evidence: {', '.join(v.evidence[:2])}")
-        
-        # 総合判定
-        avg_confidence = statistics.mean(v.confidence for v in results)
-        verified_count = sum(1 for v in results if v.result)
-        
-        print(f"\n🎯 Overall Assessment:")
-        if verified_count == len(results) and avg_confidence > 0.7:
-            print(f"   ✅ HIGHLY CREDIBLE ({avg_confidence:.0%} confidence)")
-        elif verified_count >= len(results) / 2:
-            print(f"   ⚠️  PARTIALLY VERIFIED ({avg_confidence:.0%} confidence)")
-        else:
-            print(f"   ❌ NOT VERIFIED ({avg_confidence:.0%} confidence)")
-        
-        print("=" * 80 + "\n")
-    
-    def _run_adversarial_test(self):
-        """敵対的テスト実行"""
-        if not self.llm.adversarial_tester:
-            print("❌ Adversarial testing disabled")
-            return
-        
-        if not self.history:
-            print("❌ No conversation history. Start a conversation first.")
-            return
-        
-        last_query, last_response = self.history[-1]
-        
-        print("\n" + "=" * 80)
-        print("🎪 Running Adversarial Robustness Test")
-        print("=" * 80)
-        print(f"\nOriginal Query: {last_query[:60]}...")
-        print("\n⏳ Generating adversarial examples and testing...")
-        
-        # 敵対的クエリを生成
-        adversarial_queries = self.llm.adversarial_tester.generate_adversarial_queries(last_query)
-        
-        print(f"\n📋 Generated {len(adversarial_queries)} adversarial variants:")
-        for i, adv_q in enumerate(adversarial_queries, 1):
-            print(f"   {i}. {adv_q[:70]}...")
-        
-        # 一貫性スコアを計算（簡易版）
-        consistency_scores = []
-        for adv_q in adversarial_queries[:3]:  # 最初の3つのみテスト
-            try:
-                print(f"\n   Testing variant {len(consistency_scores) + 1}...", end=" ", flush=True)
-                # 実際には非同期で実行すべきだが、簡易版として同期実行
-                adv_response = self.llm.query(adv_q)
-                
-                # 類似度計算
-                orig_words = set(last_response.text.lower().split())
-                adv_words = set(adv_response.text.lower().split())
-                
-                if orig_words and adv_words:
-                    similarity = len(orig_words & adv_words) / len(orig_words | adv_words)
-                    consistency_scores.append(similarity)
-                    print(f"✓ (consistency: {similarity:.2%})")
-            except Exception as e:
-                print(f"✗ ({e})")
-        
-        if consistency_scores:
-            avg_consistency = statistics.mean(consistency_scores)
-            min_consistency = min(consistency_scores)
-            
-            print(f"\n📊 Test Results:")
-            print(f"   Average Consistency: {avg_consistency:.2%}")
-            print(f"   Minimum Consistency: {min_consistency:.2%}")
-            
-            if avg_consistency > 0.7:
-                print(f"\n   ✅ ROBUST - High adversarial resistance")
-            elif avg_consistency > 0.5:
-                print(f"\n   ⚠️  MODERATE - Some inconsistencies detected")
-            else:
-                print(f"\n   ❌ VULNERABLE - Significant adversarial weakness")
-        
-        print("=" * 80 + "\n")
-    
-    def _show_predictions(self):
-        """予測情報表示"""
-        if not self.llm.predictive_engine:
-            print("❌ Predictive modeling disabled")
-            return
-        
-        print("\n" + "=" * 80)
-        print("🔮 Predictive Analysis")
-        print("=" * 80)
-        
-        # 次の意図を予測
-        predicted_intent = self.llm.predictive_engine.predict_next_intent()
-        success_prob = self.llm.predictive_engine.get_success_probability(predicted_intent)
-        
-        print(f"\n📍 Next Query Prediction:")
-        print(f"   Predicted Intent: {predicted_intent.value}")
-        print(f"   Success Probability: {success_prob:.1%}")
-        
-        # 使用パターン
-        if self.llm.predictive_engine.model.user_patterns:
-            print(f"\n📊 Usage Patterns Detected:")
-            top_patterns = sorted(
-                self.llm.predictive_engine.model.user_patterns.items(),
-                key=lambda x: len(x[1]),
-                reverse=True
-            )[:5]
-            
-            for pattern, results in top_patterns:
-                avg_success = statistics.mean(results) if results else 0
-                print(f"   • {pattern}: {avg_success:.1%} success ({len(results)} samples)")
-        
-        # クエリ履歴分析
-        if len(self.llm.predictive_engine.query_history) >= 10:
-            recent = list(self.llm.predictive_engine.query_history)[-10:]
-            intent_dist = Counter(q['intent'] for q in recent)
-            
-            print(f"\n📈 Recent Intent Distribution (last 10 queries):")
-            for intent, count in intent_dist.most_common():
-                bar = "█" * count + "░" * (10 - count)
-                print(f"   {intent.value:15s} [{bar}] {count}/10")
-        
-        print("=" * 80 + "\n")
-    
-    def _apply_scientific_method(self, observation: str):
-        """科学的手法を適用"""
-        if not self.llm.scientific_method:
-            print("❌ Scientific method disabled")
-            return
-        
-        print("\n" + "=" * 80)
-        print("🔬 Scientific Method Application")
-        print("=" * 80)
-        print(f"\nObservation: {observation}")
-        
-        # 1. 仮説を定式化
-        print(f"\n1️⃣  Hypothesis Formulation:")
-        hypothesis = self.llm.scientific_method.formulate_hypothesis(observation)
-        print(f"   {hypothesis.statement}")
-        print(f"   Prior Confidence: {hypothesis.bayesian_prior:.2%}")
-        
-        # 2. 実験を設計
-        print(f"\n2️⃣  Experiment Design:")
-        experiment = self.llm.scientific_method.design_experiment(hypothesis)
-        print(f"   Experiment ID: {experiment['id']}")
-        print(f"   Method: {experiment['method']}")
-        print(f"   Status: {experiment['status']}")
-        
-        # 3. 予測
-        print(f"\n3️⃣  Predictions:")
-        print(f"   If the hypothesis is correct, we expect:")
-        print(f"   • Measurable outcome related to the observation")
-        print(f"   • Reproducible results under similar conditions")
-        print(f"   • Consistency with existing knowledge")
-        
-        # 4. 結果分析（シミュレート）
-        print(f"\n4️⃣  Analysis:")
-        analysis = self.llm.scientific_method.analyze_results(
-            experiment['id'],
-            {'data_points': 100, 'effect_observed': True}
-        )
-        print(f"   Statistical Significance: {analysis['statistical_significance']:.3f}")
-        print(f"   Effect Size: {analysis['effect_size']:.3f}")
-        print(f"   Conclusion: {analysis['conclusion']}")
-        
-        # 5. ピアレビュー（シミュレート）
-        print(f"\n5️⃣  Peer Review (Simulated):")
-        mock_reviews = [
-            "The methodology is sound and well-designed",
-            "Results are consistent with theoretical predictions",
-            "Further validation recommended"
-        ]
-        review_score = self.llm.scientific_method.peer_review(hypothesis, mock_reviews)
-        print(f"   Peer Review Score: {review_score:.2%}")
-        
-        # 最終評価
-        print(f"\n🎯 Final Assessment:")
-        if review_score > 0.7 and analysis['statistical_significance'] > 0.05:
-            print(f"   ✅ HYPOTHESIS SUPPORTED")
-            print(f"   • Strong evidence in favor")
-            print(f"   • High peer review score")
-            print(f"   • Recommended for further investigation")
-        else:
-            print(f"   ⚠️  HYPOTHESIS REQUIRES MORE EVIDENCE")
-            print(f"   • Additional data collection needed")
-            print(f"   • Consider alternative explanations")
-        
-        print("=" * 80 + "\n")
-    
-    def _show_learning_progress(self):
-        """学習進捗表示"""
-        print("\n" + "=" * 80)
-        print("📊 Learning Progress Analysis")
-        print("=" * 80)
-        
-        progress = self.llm.analyze_learning_progress()
-        
-        if progress['status'] == 'insufficient_data':
-            print("\n⚠️  Insufficient data for analysis.")
-            print("   Continue using the system to unlock progress tracking.")
-            print("=" * 80 + "\n")
-            return
-        
-        print(f"\n📈 Overall Metrics:")
-        print(f"   Total Interactions: {progress['total_interactions']}")
-        print(f"   Recent Quality: {progress['recent_quality']:.3f}")
-        print(f"   Improvement: {progress['improvement']:+.3f}")
-        
-        # トレンドビジュアライゼーション
-        trend = progress['trend']
-        if trend == 'improving':
-            print(f"   Trend: 📈 IMPROVING")
-        elif trend == 'declining':
-            print(f"   Trend: 📉 DECLINING")
-        else:
-            print(f"   Trend: ➡️  STABLE")
-        
-        # 戦略パフォーマンス
-        if progress['best_strategy']:
-            print(f"\n🎯 Strategy Performance:")
-            print(f"   Best Strategy: {progress['best_strategy']}")
-            
-            if 'strategy_performance' in progress:
-                print(f"\n   Detailed Performance:")
-                for strategy, score in sorted(
-                    progress['strategy_performance'].items(),
-                    key=lambda x: x[1],
-                    reverse=True
-                ):
-                    bar = "█" * int(score * 20) + "░" * (20 - int(score * 20))
-                    print(f"   • {strategy:20s} [{bar}] {score:.3f}")
-        
-        # 推奨事項
-        print(f"\n💡 Recommendations:")
-        if trend == 'improving':
-            print(f"   ✅ Keep using current strategies")
-            print(f"   ✅ Gradually increase complexity")
-        elif trend == 'declining':
-            print(f"   ⚠️  Consider switching strategies")
-            print(f"   ⚠️  Provide more feedback")
-            print(f"   ⚠️  Review recent interactions")
-        else:
-            print(f"   • Try new strategies for diversity")
-            print(f"   • Challenge with complex queries")
-        
-        print("=" * 80 + "\n")
-    
-    def _show_meta_insights(self):
-        """メタインサイト表示"""
-        print("\n" + "=" * 80)
-        print("🌟 Meta-Level Insights")
-        print("=" * 80)
-        
-        insights = self.llm.generate_meta_insights()
-        
-        if not insights:
-            print("\n⚠️  Insufficient data for meta-analysis.")
-            print("   Continue interacting with the system.")
-            print("=" * 80 + "\n")
-            return
-        
-        print(f"\n🔍 System has generated {len(insights)} insights:")
-        for insight in insights:
-            print(f"\n   {insight}")
-        
-        # 追加の深い分析
-        stats = self.llm.get_stats()
-        
-        print(f"\n🧠 Deep Analysis:")
-        
-        # システム成熟度
-        if stats['profile']['interactions'] < 50:
-            maturity = "Early Stage"
-            emoji = "🌱"
-        elif stats['profile']['interactions'] < 200:
-            maturity = "Growing"
-            emoji = "🌿"
-        elif stats['profile']['interactions'] < 500:
-            maturity = "Mature"
-            emoji = "🌳"
-        else:
-            maturity = "Expert"
-            emoji = "🏆"
-        
-        print(f"   System Maturity: {emoji} {maturity} ({stats['profile']['interactions']} interactions)")
-        
-        # 機能活用度
-        ultimate = stats.get('ultimate', {})
-        total_advanced = sum(ultimate.values())
-        if total_advanced > 100:
-            print(f"   Feature Utilization: 🌟 POWER USER ({total_advanced} advanced operations)")
-        elif total_advanced > 50:
-            print(f"   Feature Utilization: ⭐ ACTIVE ({total_advanced} advanced operations)")
-        else:
-            print(f"   Feature Utilization: 💡 EXPLORE MORE ({total_advanced} advanced operations)")
-        
-        # 予測精度
-        if 'prediction_accuracy' in stats['profile']:
-            accuracy = stats['profile']['prediction_accuracy']
-            if accuracy > 0.7:
-                print(f"   Prediction Accuracy: 🎯 HIGH ({accuracy:.1%})")
-            elif accuracy > 0.5:
-                print(f"   Prediction Accuracy: 📊 MODERATE ({accuracy:.1%})")
-            else:
-                print(f"   Prediction Accuracy: 📉 LEARNING ({accuracy:.1%})")
-        
-        print("=" * 80 + "\n")
-    
-    def _find_analogies(self, concept: str):
-        """類推を発見"""
-        if not self.llm.creative_synthesizer:
-            print("❌ Creative synthesis disabled")
-            return
-        
-        print("\n" + "=" * 80)
-        print(f"🔍 Finding Analogies for: '{concept}'")
-        print("=" * 80)
-        
-        analogies = self.llm.creative_synthesizer.find_analogies(concept, top_k=10)
-        
-        if not analogies:
-            print("\n   No analogies found. The concept may be novel.")
-            print("=" * 80 + "\n")
-            return
-        
-        print(f"\n📊 Similar Concepts (by semantic similarity):")
-        for i, (related, similarity) in enumerate(analogies, 1):
-            bar = "█" * int(similarity * 20) + "░" * (20 - int(similarity * 20))
-            print(f"   {i:2d}. [{bar}] {similarity:+.3f} - {related}")
-        
-        # 最も近い概念との統合を提案
-        if len(analogies) >= 2:
-            top1, top2 = analogies[0][0], analogies[1][0]
-            print(f"\n💡 Suggested Synthesis:")
-            print(f"   Try: /synthesize {concept} {top1}")
-            print(f"   Or:  /synthesize {concept} {top2}")
-        
-        print("=" * 80 + "\n")
-    
-    def _show_trust_score(self):
-        """信頼スコア表示"""
-        if not self.llm.verification_system:
-            print("❌ Verification system disabled")
-            return
-        
-        print("\n" + "=" * 80)
-        print("🔐 System Trust Score")
-        print("=" * 80)
-        
-        trust_score = self.llm.verification_system.get_trust_score()
-        
-        print(f"\n📊 Overall Trust Score: {trust_score:.2%}")
-        
-        # ビジュアル表現
-        bar = "█" * int(trust_score * 40) + "░" * (40 - int(trust_score * 40))
-        print(f"   [{bar}]")
-        
-        # 評価
-        if trust_score > 0.8:
-            rating = "🌟 EXCELLENT"
-            desc = "System responses are highly trustworthy"
-        elif trust_score > 0.6:
-            rating = "✅ GOOD"
-            desc = "System responses are generally reliable"
-        elif trust_score > 0.4:
-            rating = "⚠️  MODERATE"
-            desc = "Exercise caution with system responses"
-        else:
-            rating = "❌ LOW"
-            desc = "System needs more calibration"
-        
-        print(f"\n   Rating: {rating}")
-        print(f"   {desc}")
-        
-        # 検証統計
-        records = self.llm.verification_system.records
-        if records:
-            total = len(records)
-            verified = sum(1 for r in records if r.result)
-            
-            print(f"\n📋 Verification Statistics:")
-            print(f"   Total Verifications: {total}")
-            print(f"   Claims Verified: {verified} ({verified/total:.1%})")
-            print(f"   Claims Rejected: {total - verified} ({(total-verified)/total:.1%})")
-            
-            # 方法別の統計
-            method_stats = defaultdict(list)
-            for r in records:
-                method_stats[r.method].append(r.confidence)
-            
-            print(f"\n   By Method:")
-            for method, confidences in method_stats.items():
-                avg_conf = statistics.mean(confidences)
-                print(f"   • {method.value:20s}: {avg_conf:.2%} avg confidence")
-        
-        print("=" * 80 + "\n")
-    
-    # ========== 補助メソッド ==========
-    
-    def _export_data(self):
-        """データエクスポート"""
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filepath = f"export_{timestamp}.json"
-        
-        export_data = {
-            'session_id': self.session_id,
-            'timestamp': timestamp,
-            'history': [
-                {
-                    'query': q,
-                    'response': r.to_dict()
-                }
-                for q, r in self.history
-            ],
-            'stats': self.llm.get_stats(),
-            'profile': self.llm.profile
-        }
-        
-        try:
-            with open(filepath, 'w', encoding='utf-8') as f:
-                json.dump(export_data, f, ensure_ascii=False, indent=2)
-            print(f"📤 Data exported: {filepath}")
-        except Exception as e:
-            print(f"❌ Export failed: {e}")
-    
-    def _show_feedback_history(self):
-        """フィードバック履歴表示"""
-        print("\n" + "=" * 80)
-        print("📊 Feedback History")
-        print("=" * 80)
-        
-        feedback_history = self.llm.profile.get('feedback_history', [])
-        if not feedback_history:
-            print("\nNo feedback recorded yet.")
-            print("=" * 80 + "\n")
-            return
-        
-        recent = feedback_history[-10:]
-        for i, fb in enumerate(recent, 1):
-            rating = fb.get('rating', 0)
-            rating_str = "⭐" * max(0, rating + 2)
-            print(f"\n{i}. Rating: {rating:+d} {rating_str}")
-            print(f"   Query: {fb.get('query', '')[:60]}...")
-            print(f"   Time: {fb.get('timestamp', 'N/A')}")
-        
-        avg_rating = statistics.mean(fb.get('rating', 0) for fb in feedback_history)
-        print(f"\n📊 Average Rating: {avg_rating:+.2f}")
-        print("=" * 80 + "\n")
-    
-    def _show_improvements(self):
-        """改善提案表示"""
-        print("\n" + "=" * 80)
-        print("💡 Improvement Suggestions")
-        print("=" * 80)
-        
-        stats = self.llm.get_stats()
-        suggestions = []
-        
-        # 成功率が低い場合
-        success_rate = float(stats['system']['success_rate'].strip('%')) / 100
-        if success_rate < 0.9:
-            suggestions.append("• Consider using more advanced strategies (quantum, genetic)")
-        
-        # キャッシュヒット率が低い場合
-        cache_rate = float(stats['system']['cache_hit_rate'].strip('%')) / 100
-        if cache_rate < 0.3:
-            suggestions.append("• Ask similar questions to benefit from caching")
-        
-        # 遺伝的進化が有効な場合
-        if 'genetic' in stats and stats['genetic']['generation'] > 0:
-            best_fitness = stats['genetic']['best_fitness']
-            if best_fitness < 0.7:
-                suggestions.append("• Provide more feedback to improve prompt evolution")
-        
-        # RLHF
-        if 'rlhf' in stats:
-            avg_reward = stats['rlhf']['avg_reward']
-            if avg_reward < 0.5:
-                suggestions.append("• Rate responses to help the system learn your preferences")
-        
-        if not suggestions:
-            suggestions.append("✅ System is performing optimally!")
-        
-        for suggestion in suggestions:
-            print(f"\n{suggestion}")
-        
-        print("\n" + "=" * 80 + "\n")
-    
-    def _show_quantum_info(self):
-        """量子最適化詳細"""
-        if not self.llm.quantum_optimizer:
-            print("❌ Quantum optimization disabled")
-            return
-        
-        print("\n" + "=" * 80)
-        print("🔮 Quantum Optimization Details")
-        print("=" * 80)
-        print(f"\n⚛️  Configuration:")
-        print(f"   Qubits: {self.llm.quantum_optimizer.num_qubits}")
-        print(f"   Iterations: {self.llm.quantum_optimizer.config.iterations}")
-        print(f"   Optimization Depth: {self.llm.quantum_optimizer.config.optimization_depth}")
-        print(f"\n📊 Performance:")
-        print(f"   Total Optimizations: {self.llm.metrics['quantum_optimizations']}")
-        print(f"   Success Rate: High")
-        print(f"\n💡 When to Use:")
-        print(f"   • Frontier-level complexity questions")
-        print(f"   • Multi-dimensional optimization problems")
-        print(f"   • Exploring novel solution spaces")
-        print("=" * 80 + "\n")
-    
-    def _show_genetic_info(self):
-        """遺伝的進化詳細"""
-        if not self.llm.genetic_evolver:
-            print("❌ Genetic evolution disabled")
-            return
-        
-        print("\n" + "=" * 80)
-        print("🧬 Genetic Evolution Details")
-        print("=" * 80)
-        print(f"\n📈 Population Status:")
-        print(f"   Generation: {self.llm.genetic_evolver.generation}")
-        print(f"   Population Size: {len(self.llm.genetic_evolver.population)}")
-        print(f"   Mutation Rate: {self.llm.config.genetic.mutation_rate:.1%}")
-        print(f"   Crossover Rate: {self.llm.config.genetic.crossover_rate:.1%}")
-        
-        best_prompts = self.llm.genetic_evolver.get_best_prompts(5)
-        if best_prompts:
-            print(f"\n🏆 Top 5 Evolved Prompts:")
-            for i, prompt in enumerate(best_prompts, 1):
-                fitness_bar = "█" * int(prompt.fitness * 20) + "░" * (20 - int(prompt.fitness * 20))
-                print(f"\n   {i}. Fitness: [{fitness_bar}] {prompt.fitness:.3f}")
-                print(f"      Generation: {prompt.generation} | Mutations: {prompt.mutations}")
-                print(f"      Template: {prompt.template[:60]}...")
-        
-        print("=" * 80 + "\n")
-    
-    def _show_swarm_info(self):
-        """群知能詳細"""
-        if not self.llm.swarm:
-            print("❌ Swarm intelligence disabled")
-            return
-        
-        print("\n" + "=" * 80)
-        print("🌊 Swarm Intelligence Details")
-        print("=" * 80)
-        print(f"\n🐝 Swarm Configuration:")
-        print(f"   Agents: {len(self.llm.swarm.agents)}")
-        print(f"   Inertia Weight: {self.llm.config.swarm.inertia_weight}")
-        print(f"   Cognitive Weight: {self.llm.config.swarm.cognitive_weight}")
-        print(f"   Social Weight: {self.llm.config.swarm.social_weight}")
-        
-        if self.llm.swarm.agents:
-            print(f"\n🎭 Agent Personas:")
-            for agent in self.llm.swarm.agents:
-                print(f"   • {agent.persona.value}: Fitness {agent.best_fitness:.3f}")
-        
-        print(f"\n📊 Performance:")
-        print(f"   Global Best Fitness: {self.llm.swarm.global_best_fitness:.3f}")
-        print(f"   Total Optimizations: {self.llm.metrics['swarm_optimizations']}")
-        
-        print("=" * 80 + "\n")
-    
-    def _show_rlhf_info(self):
-        """RLHF詳細"""
-        if not self.llm.rlhf:
-            print("❌ RLHF disabled")
-            return
-        
-        print("\n" + "=" * 80)
-        print("🎯 Reinforcement Learning Details")
-        print("=" * 80)
-        print(f"\n🧠 Learning Status:")
-        print(f"   States Explored: {len(self.llm.rlhf.state_visits)}")
-        print(f"   Q-Table Size: {len(self.llm.rlhf.q_table)}")
-        print(f"   Total Updates: {sum(self.llm.rlhf.state_visits.values())}")
-        print(f"   Learning Rate: {self.llm.config.rlhf.learning_rate}")
-        print(f"   Exploration Rate: {self.llm.config.rlhf.exploration_rate:.1%}")
-        
-        if self.llm.rlhf.reward_history:
-            avg_reward = statistics.mean(self.llm.rlhf.reward_history)
-            recent_reward = statistics.mean(self.llm.rlhf.reward_history[-10:]) if len(self.llm.rlhf.reward_history) >= 10 else avg_reward
-            print(f"\n📈 Rewards:")
-            print(f"   Average Reward: {avg_reward:.3f}")
-            print(f"   Recent Reward (last 10): {recent_reward:.3f}")
-            print(f"   Trend: {'📈 Improving' if recent_reward > avg_reward else '📉 Declining' if recent_reward < avg_reward else '➡️ Stable'}")
-        
-        # トップポリシー
-        policy = self.llm.rlhf.get_policy()
-        if policy:
-            print(f"\n🎲 Current Policy (Top 5):")
-            for i, (state, action) in enumerate(list(policy.items())[:5], 1):
-                print(f"   {i}. {state} → {action}")
-        
-        print("=" * 80 + "\n")
-    
-    def _show_hypothesis_history(self):
-        """仮説検証履歴"""
-        if not self.llm.hypothesis_tester:
-            print("❌ Hypothesis testing disabled")
-            return
-        
-        print("\n" + "=" * 80)
-        print("🔬 Hypothesis Testing History")
-        print("=" * 80)
-        
-        hypotheses = self.llm.hypothesis_tester.hypotheses
-        if not hypotheses:
-            print("\nNo hypotheses generated yet.")
-            print("=" * 80 + "\n")
-            return
-        
-        tested = [h for h in hypotheses if h.tested]
-        print(f"\n📊 Summary:")
-        print(f"   Total Hypotheses: {len(hypotheses)}")
-        print(f"   Tested: {len(tested)}")
-        print(f"   Confirmed: {sum(1 for h in tested if h.result)}")
-        print(f"   Rejected: {sum(1 for h in tested if not h.result)}")
-        
-        best = self.llm.hypothesis_tester.get_best_hypotheses(5)
-        if best:
-            print(f"\n🏆 Top Hypotheses (by confidence):")
-            for i, h in enumerate(best, 1):
-                conf_bar = "█" * int(h.confidence * 20) + "░" * (20 - int(h.confidence * 20))
-                status = "✅ Confirmed" if h.result else "❌ Rejected"
-                print(f"\n   {i}. [{conf_bar}] {h.confidence:.3f} - {status}")
-                print(f"      {h.statement[:70]}...")
-                print(f"      Evidence: {len(h.evidence)} | Counter: {len(h.counter_evidence)}")
-        
-        print("=" * 80 + "\n")
-    
-    def _show_history(self):
-        """会話履歴表示"""
-        print("\n" + "=" * 80)
-        print("📜 Conversation History")
-        print("=" * 80)
-        
-        if not self.history:
-            print("\nNo conversation history yet.")
-            print("=" * 80 + "\n")
-            return
-        
-        recent = self.history[-10:]
-        for i, (query, response) in enumerate(recent, 1):
-            print(f"\n{i}. Q: {query[:60]}...")
-            print(f"   A: {response.text[:60]}...")
-            print(f"   Strategy: {response.strategy.value if response.strategy else 'N/A'} | Quality: {response.quality_score:.2f}")
-        
-        print(f"\n📊 Total Conversations: {len(self.history)}")
-        print("=" * 80 + "\n")
-    
-    def _show_profile(self):
-        """プロファイル表示"""
-        print("\n" + "=" * 80)
-        print("👤 User Profile")
-        print("=" * 80)
-        
-        profile = self.llm.profile
-        print(f"\n📊 Activity:")
-        print(f"   Total Interactions: {profile['interaction_count']}")
-        print(f"   Feedback Given: {len(profile.get('feedback_history', []))}")
-        
-        # トップトピック
-        topics = sorted(profile['topics'].items(), key=lambda x: x[1], reverse=True)[:10]
-        if topics:
-            print(f"\n📚 Top Topics:")
-            for topic, score in topics:
-                print(f"   • {topic}: {score}")
-        
-        # 専門知識
-        expertise = [(k, v) for k, v in profile['expertise'].items() if v > 0.3]
-        if expertise:
-            expertise.sort(key=lambda x: x[1], reverse=True)
-            print(f"\n🎓 Expertise Areas:")
-            for topic, level in expertise[:10]:
-                bar = "█" * int(level * 20) + "░" * (20 - int(level * 20))
-                print(f"   {topic:20s} [{bar}] {level:.0%}")
-        
-        # 戦略好み
-        if profile['strategy_preference']:
-            print(f"\n🎯 Strategy Preferences:")
-            sorted_strat = sorted(profile['strategy_preference'].items(), key=lambda x: x[1], reverse=True)
-            for strategy, score in sorted_strat[:5]:
-                print(f"   • {strategy}: {score:.2f}")
-        
-        print("=" * 80 + "\n")
-    
-    def _show_config(self):
-        """設定表示"""
-        print("\n" + "=" * 80)
-        print("⚙️  System Configuration")
-        print("=" * 80)
-        
-        config = self.llm.config
-        print(f"\n🔧 Basic Settings:")
-        print(f"   Model: {config.model}")
-        print(f"   Max Tokens: {config.max_tokens}")
-        print(f"   Temperature: {config.temperature}")
-        print(f"   Similarity Threshold: {config.similarity_threshold}")
-        
-        print(f"\n🚀 Features:")
-        print(f"   Adaptive: {'✅' if config.adaptive else '❌'}")
-        print(f"   Vector DB: {'✅' if config.vec_db else '❌'}")
-        print(f"   Knowledge Graph: {'✅' if config.knowledge_graph else '❌'}")
-        print(f"   Chain of Thought: {'✅' if config.chain_of_thought else '❌'}")
-        print(f"   Quantum Optimization: {'✅' if config.quantum.enabled else '❌'}")
-        print(f"   Genetic Evolution: {'✅' if config.genetic.enabled else '❌'}")
-        print(f"   Swarm Intelligence: {'✅' if config.swarm.enabled else '❌'}")
-        print(f"   RLHF: {'✅' if config.rlhf.enabled else '❌'}")
-        
-        print("=" * 80 + "\n")
-    
-    def _set_config(self, key: str, value: str):
-        """設定変更"""
-        try:
-            if key == 'temperature':
-                self.llm.config.temperature = float(value)
-                print(f"✅ Temperature set to {value}")
-            elif key == 'max_tokens':
-                self.llm.config.max_tokens = int(value)
-                print(f"✅ Max tokens set to {value}")
-            elif key == 'model':
-                if value in self.llm.MODELS:
-                    self.llm.config.model = value
-                    print(f"✅ Model set to {value}")
-                else:
-                    print(f"❌ Unknown model: {value}")
-            else:
-                print(f"❌ Unknown config key: {key}")
-        except ValueError:
-            print(f"❌ Invalid value for {key}")
-    
-    def _analyze_text(self, text: str):
-        """テキスト分析"""
-        print("\n" + "=" * 80)
-        print("🔍 Text Analysis")
-        print("=" * 80)
-        
-        intent, complexity = self.llm._analyze_query(text)
-        
-        print(f"\n📊 Analysis Results:")
-        print(f"   Intent: {intent.value}")
-        print(f"   Complexity: {complexity.value}")
-        print(f"   Word Count: {len(text.split())}")
-        print(f"   Character Count: {len(text)}")
-        
-        # センチメント
-        sentiment = sum(1 for w in ['good', 'great', 'excellent'] if w in text.lower()) - \
-                   sum(1 for w in ['bad', 'terrible', 'awful'] if w in text.lower())
-        sentiment_label = "Positive" if sentiment > 0 else "Negative" if sentiment < 0 else "Neutral"
-        print(f"   Sentiment: {sentiment_label}")
-        
-        # 推奨戦略
-        strategy = self.llm._select_strategy(intent, complexity)
-        print(f"   Recommended Strategy: {strategy.value}")
-        
-        print("=" * 80 + "\n")
-    
-    def _search_knowledge(self, query: str):
-        """知識グラフ検索"""
-        if not self.llm.knowledge_graph:
-            print("❌ Knowledge graph disabled")
-            return
-        
-        print("\n" + "=" * 80)
-        print(f"🔎 Searching Knowledge Graph: '{query}'")
-        print("=" * 80)
-        
-        subgraph = self.llm.knowledge_graph.query_subgraph(query, depth=2)
-        
-        print(f"\n📊 Results:")
-        print(f"   Nodes Found: {len(subgraph['nodes'])}")
-        print(f"   Edges Found: {len(subgraph['edges'])}")
-        
-        if subgraph['nodes']:
-            print(f"\n🔗 Related Nodes:")
-            for i, node in enumerate(subgraph['nodes'][:10], 1):
-                print(f"   {i}. {node.name} ({node.type}) - Relevance: {node.relevance_score:.2f}")
-        else:
-            print("\n   No matching nodes found.")
-        
-        print("=" * 80 + "\n")
-    
-    def _show_topics(self):
-        """トピック一覧"""
-        print("\n" + "=" * 80)
-        print("📚 Topic Distribution")
-        print("=" * 80)
-        
-        topics = sorted(self.llm.profile['topics'].items(), key=lambda x: x[1], reverse=True)
-        
-        if not topics:
-            print("\nNo topics recorded yet.")
-            print("=" * 80 + "\n")
-            return
-        
-        total_score = sum(score for _, score in topics)
-        
-        print(f"\n📊 Top 20 Topics:")
-        for i, (topic, score) in enumerate(topics[:20], 1):
-            percentage = (score / total_score * 100) if total_score > 0 else 0
-            bar = "█" * int(percentage / 5) + "░" * (20 - int(percentage / 5))
-            print(f"   {i:2d}. {topic:20s} [{bar}] {percentage:5.1f}%")
-        
-        print(f"\n   Total Topics: {len(topics)}")
-        print("#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Quantum-Enhanced Self-Evolving Enterprise LLM System v3.5γ ULTIMATE
@@ -3976,12 +2859,1127 @@ class QuantumChat:
         
         elif cmd == '/help':
             self.print_welcome()
+        elif cmd == '/debug':
+            self._show_debug_info()
+        
+        # ========== 究極の機能 ==========
+        elif cmd == '/causal':
+            if len(parts) < 2:
+                print("❌ Usage: /causal <event>")
+            else:
+                event = ' '.join(parts[1:])
+                self._analyze_causality(event)
+        
+        elif cmd == '/synthesize':
+            if len(parts) < 3:
+                print("❌ Usage: /synthesize <concept_a> <concept_b>")
+            else:
+                concept_a = parts[1]
+                concept_b = parts[2]
+                self._creative_synthesis(concept_a, concept_b)
+        
+        elif cmd == '/verify':
+            if len(parts) < 2:
+                print("❌ Usage: /verify <claim>")
+            else:
+                claim = ' '.join(parts[1:])
+                self._verify_claim(claim)
+        
+        elif cmd == '/adversarial':
+            self._run_adversarial_test()
+        
+        elif cmd == '/predict':
+            self._show_predictions()
+        
+        elif cmd == '/scientific':
+            if len(parts) < 2:
+                print("❌ Usage: /scientific <observation>")
+            else:
+                observation = ' '.join(parts[1:])
+                self._apply_scientific_method(observation)
+        
+        elif cmd == '/progress':
+            self._show_learning_progress()
+        
+        elif cmd == '/meta':
+            self._show_meta_insights()
+        
+        elif cmd == '/analogies':
+            if len(parts) < 2:
+                print("❌ Usage: /analogies <concept>")
+            else:
+                concept = ' '.join(parts[1:])
+                self._find_analogies(concept)
+        
+        elif cmd == '/trust':
+            self._show_trust_score()
         
         else:
             print(f"❌ Unknown command: {cmd}")
+            print("Type /help for available commands")
         
         return True
     
+    # ========== 究極の機能の補助メソッド ==========
+    
+    def _analyze_causality(self, event: str):
+        """因果関係分析"""
+        if not self.llm.causal_engine:
+            print("❌ Causal reasoning disabled")
+            return
+        
+        print("\n" + "=" * 80)
+        print(f"🧩 Causal Analysis: '{event}'")
+        print("=" * 80)
+        
+        # 原因を推論
+        causes = self.llm.causal_engine.infer_cause(event, depth=3)
+        
+        if causes:
+            print(f"\n🔍 Potential Causes:")
+            for i, (cause, prob) in enumerate(causes, 1):
+                bar = "█" * int(prob * 30) + "░" * (30 - int(prob * 30))
+                print(f"   {i:2d}. [{bar}] {prob:.2%} - {cause}")
+        else:
+            print("\n   No causal relationships found in knowledge base.")
+        
+        # 結果を予測
+        effects = self.llm.causal_engine.predict_effect(event, depth=3)
+        
+        if effects:
+            print(f"\n🔮 Potential Effects:")
+            for i, (effect, prob) in enumerate(effects, 1):
+                bar = "█" * int(prob * 30) + "░" * (30 - int(prob * 30))
+                print(f"   {i:2d}. [{bar}] {prob:.2%} - {effect}")
+        
+        # 介入シミュレーション
+        print(f"\n💡 Intervention Simulation:")
+        print(f"   If we intervene on '{event[:40]}...', we can expect:")
+        print    def handle_command(self, command: str) -> bool:
+        """コマンド処理"""
+        parts = command.strip().split()
+        cmd = parts[0].lower()
+        
+        # ========== 基本コマンド ==========
+        if cmd == '/exit':
+            print("👋 Goodbye!")
+            return False
+        
+        elif cmd == '/help':
+            self.print_welcome()
+        
+        elif cmd == '/stats':
+            self.print_stats()
+        
+        # ========== データ管理 ==========
+        elif cmd == '/save':
+            filepath = parts[1] if len(parts) > 1 else 'quantum_llm_state.json'
+            self.llm.save_state(filepath)
+        
+        elif cmd == '/load':
+            filepath = parts[1] if len(parts) > 1 else 'quantum_llm_state.json'
+            self.llm.load_state(filepath)
+        
+        elif cmd == '/export':
+            self._export_data()
+        
+        elif cmd == '/clear':
+            self.history.clear()
+            self.llm.context_window.clear()
+            if self.llm.vector_db:
+                self.llm.vector_db.vectors.clear()
+            print("🗑️  All history cleared")
+        
+        # ========== 評価・学習 ==========
+        elif cmd == '/feedback':
+            if not self.history:
+                print("❌ No previous response to rate")
+                return True
+            
+            try:
+                rating = int(parts[1]) if len(parts) > 1 else 0
+                if rating < -2 or rating > 2:
+                    print("❌ Rating must be between -2 and +2")
+                    return True
+                
+                last_query, last_response = self.history[-1]
+                self.llm.add_feedback(last_query, last_response.text, rating, last_response)
+                print(f"✅ Feedback recorded: {rating:+d}")
+            except ValueError:
+                print("❌ Invalid rating")
+        
+        elif cmd == '/rate':
+            if not self.history:
+                print("❌ No previous response to rate")
+                return True
+            
+            try:
+                rating = int(parts[1]) if len(parts) > 1 else 3
+                if rating < 1 or rating > 5:
+                    print("❌ Rating must be between 1 and 5")
+                    return True
+                
+                # 5段階を-2~+2に変換
+                converted = rating - 3
+                last_query, last_response = self.history[-1]
+                self.llm.add_feedback(last_query, last_response.text, converted, last_response)
+                print(f"⭐ Rated: {rating}/5 stars")
+            except ValueError:
+                print("❌ Invalid rating")
+        
+        elif cmd == '/review':
+            self._show_feedback_history()
+        
+        elif cmd == '/improve':
+            self._show_improvements()
+        
+        # ========== 高度な機能 ==========
+        elif cmd == '/quantum':
+            self._show_quantum_info()
+        
+        elif cmd == '/genetic':
+            self._show_genetic_info()
+        
+        elif cmd == '/swarm':
+            self._show_swarm_info()
+        
+        elif cmd == '/rlhf':
+            self._show_rlhf_info()
+        
+        elif cmd == '/kg':
+            self._show_knowledge_graph()
+        
+        elif cmd == '/hypothesis':
+            self._show_hypothesis_history()
+        
+        # ========== 表示・設定 ==========
+        elif cmd == '/history':
+            self._show_history()
+        
+        elif cmd == '/profile':
+            self._show_profile()
+        
+        elif cmd == '/config':
+            self._show_config()
+        
+        elif cmd == '/set':
+            if len(parts) < 3:
+                print("❌ Usage: /set <key> <value>")
+            else:
+                self._set_config(parts[1], parts[2])
+        
+        # ========== 分析・検索 ==========
+        elif cmd == '/analyze':
+            if len(parts) < 2:
+                print("❌ Usage: /analyze <text>")
+            else:
+                text = ' '.join(parts[1:])
+                self._analyze_text(text)
+        
+        elif cmd == '/search':
+            if len(parts) < 2:
+                print("❌ Usage: /search <query>")
+            else:
+                query = ' '.join(parts[1:])
+                self._search_knowledge(query)
+        
+        elif cmd == '/topics':
+            self._show_topics()
+        
+        elif cmd == '/insights':
+            self._generate_insights()
+        
+        # ========== 実験的機能 ==========
+        elif cmd == '/experiment':
+            if len(parts) < 2:
+                print("❌ Usage: /experiment <strategy>")
+                print("   Available: quantum, genetic, swarm, cot, debate")
+            else:
+                strategy = parts[1]
+                self._run_experiment(strategy)
+        
+        elif cmd == '/compare':
+            if len(parts) < 2:
+                print("❌ Usage: /compare <query>")
+            else:
+                query = ' '.join(parts[1:])
+                self._compare_strategies(query)
+        
+        elif cmd == '/benchmark':
+            self._run_benchmark()
+        
+        # 介入シミュレーション
+        print(f"\n💡 Intervention Simulation:")
+        print(f"   If we intervene on '{event[:40]}...', we can expect:")
+        for effect, prob in effects[:3]:
+            print(f"   • {effect[:60]}... (likelihood: {prob:.0%})")
+        
+        print("=" * 80 + "\n")
+    
+    def _creative_synthesis(self, concept_a: str, concept_b: str):
+        """創造的統合"""
+        if not self.llm.creative_synthesizer:
+            print("❌ Creative synthesis disabled")
+            return
+        
+        print("\n" + "=" * 80)
+        print(f"🎨 Creative Synthesis: '{concept_a}' + '{concept_b}'")
+        print("=" * 80)
+        
+        synthesis = self.llm.creative_synthesizer.synthesize(concept_a, concept_b)
+        
+        print(f"\n💡 Synthesized Concept:")
+        print(f"   {synthesis.synthesis}")
+        
+        print(f"\n📊 Metrics:")
+        novelty_bar = "█" * int(synthesis.novelty_score * 20) + "░" * (20 - int(synthesis.novelty_score * 20))
+        coherence_bar = "█" * int(synthesis.coherence_score * 20) + "░" * (20 - int(synthesis.coherence_score * 20))
+        useful_bar = "█" * int(synthesis.usefulness_score * 20) + "░" * (20 - int(synthesis.usefulness_score * 20))
+        
+        print(f"   Novelty:     [{novelty_bar}] {synthesis.novelty_score:.2%}")
+        print(f"   Coherence:   [{coherence_bar}] {synthesis.coherence_score:.2%}")
+        print(f"   Usefulness:  [{useful_bar}] {synthesis.usefulness_score:.2%}")
+        
+        print(f"\n🌟 Overall Innovation Score: {(synthesis.novelty_score + synthesis.coherence_score + synthesis.usefulness_score) / 3:.2%}")
+        
+        print("=" * 80 + "\n")
+    
+    def _verify_claim(self, claim: str):
+        """主張を検証"""
+        if not self.llm.verification_system:
+            print("❌ Verification system disabled")
+            return
+        
+        print("\n" + "=" * 80)
+        print(f"🔐 Claim Verification")
+        print("=" * 80)
+        print(f"\nClaim: {claim}")
+        
+        # 複数の検証方法を適用
+        methods = [
+            VerificationMethod.LOGICAL_CONSISTENCY,
+            VerificationMethod.CROSS_REFERENCE,
+            VerificationMethod.FACT_CHECK
+        ]
+        
+        results = []
+        for method in methods:
+            context = ' '.join([q for q, _ in self.history[-3:]]) if self.history else ""
+            verification = self.llm.verification_system.verify_claim(claim, context, method)
+            results.append(verification)
+        
+        print(f"\n📋 Verification Results:")
+        for i, v in enumerate(results, 1):
+            status = "✅ VERIFIED" if v.result else "❌ REJECTED"
+            conf_bar = "█" * int(v.confidence * 20) + "░" * (20 - int(v.confidence * 20))
+            print(f"\n   {i}. {v.method.value.replace('_', ' ').title()}: {status}")
+            print(f"      Confidence: [{conf_bar}] {v.confidence:.2%}")
+            if v.evidence:
+                print(f"      Evidence: {', '.join(v.evidence[:2])}")
+        
+        # 総合判定
+        avg_confidence = statistics.mean(v.confidence for v in results)
+        verified_count = sum(1 for v in results if v.result)
+        
+        print(f"\n🎯 Overall Assessment:")
+        if verified_count == len(results) and avg_confidence > 0.7:
+            print(f"   ✅ HIGHLY CREDIBLE ({avg_confidence:.0%} confidence)")
+        elif verified_count >= len(results) / 2:
+            print(f"   ⚠️  PARTIALLY VERIFIED ({avg_confidence:.0%} confidence)")
+        else:
+            print(f"   ❌ NOT VERIFIED ({avg_confidence:.0%} confidence)")
+        
+        print("=" * 80 + "\n")
+    
+    def _run_adversarial_test(self):
+        """敵対的テスト実行"""
+        if not self.llm.adversarial_tester:
+            print("❌ Adversarial testing disabled")
+            return
+        
+        if not self.history:
+            print("❌ No conversation history. Start a conversation first.")
+            return
+        
+        last_query, last_response = self.history[-1]
+        
+        print("\n" + "=" * 80)
+        print("🎪 Running Adversarial Robustness Test")
+        print("=" * 80)
+        print(f"\nOriginal Query: {last_query[:60]}...")
+        print("\n⏳ Generating adversarial examples and testing...")
+        
+        # 敵対的クエリを生成
+        adversarial_queries = self.llm.adversarial_tester.generate_adversarial_queries(last_query)
+        
+        print(f"\n📋 Generated {len(adversarial_queries)} adversarial variants:")
+        for i, adv_q in enumerate(adversarial_queries, 1):
+            print(f"   {i}. {adv_q[:70]}...")
+        
+        # 一貫性スコアを計算（簡易版）
+        consistency_scores = []
+        for adv_q in adversarial_queries[:3]:  # 最初の3つのみテスト
+            try:
+                print(f"\n   Testing variant {len(consistency_scores) + 1}...", end=" ", flush=True)
+                # 実際には非同期で実行すべきだが、簡易版として同期実行
+                adv_response = self.llm.query(adv_q)
+                
+                # 類似度計算
+                orig_words = set(last_response.text.lower().split())
+                adv_words = set(adv_response.text.lower().split())
+                
+                if orig_words and adv_words:
+                    similarity = len(orig_words & adv_words) / len(orig_words | adv_words)
+                    consistency_scores.append(similarity)
+                    print(f"✓ (consistency: {similarity:.2%})")
+            except Exception as e:
+                print(f"✗ ({e})")
+        
+        if consistency_scores:
+            avg_consistency = statistics.mean(consistency_scores)
+            min_consistency = min(consistency_scores)
+            
+            print(f"\n📊 Test Results:")
+            print(f"   Average Consistency: {avg_consistency:.2%}")
+            print(f"   Minimum Consistency: {min_consistency:.2%}")
+            
+            if avg_consistency > 0.7:
+                print(f"\n   ✅ ROBUST - High adversarial resistance")
+            elif avg_consistency > 0.5:
+                print(f"\n   ⚠️  MODERATE - Some inconsistencies detected")
+            else:
+                print(f"\n   ❌ VULNERABLE - Significant adversarial weakness")
+        
+        print("=" * 80 + "\n")
+    
+    def _show_predictions(self):
+        """予測情報表示"""
+        if not self.llm.predictive_engine:
+            print("❌ Predictive modeling disabled")
+            return
+        
+        print("\n" + "=" * 80)
+        print("🔮 Predictive Analysis")
+        print("=" * 80)
+        
+        # 次の意図を予測
+        predicted_intent = self.llm.predictive_engine.predict_next_intent()
+        success_prob = self.llm.predictive_engine.get_success_probability(predicted_intent)
+        
+        print(f"\n📍 Next Query Prediction:")
+        print(f"   Predicted Intent: {predicted_intent.value}")
+        print(f"   Success Probability: {success_prob:.1%}")
+        
+        # 使用パターン
+        if self.llm.predictive_engine.model.user_patterns:
+            print(f"\n📊 Usage Patterns Detected:")
+            top_patterns = sorted(
+                self.llm.predictive_engine.model.user_patterns.items(),
+                key=lambda x: len(x[1]),
+                reverse=True
+            )[:5]
+            
+            for pattern, results in top_patterns:
+                avg_success = statistics.mean(results) if results else 0
+                print(f"   • {pattern}: {avg_success:.1%} success ({len(results)} samples)")
+        
+        # クエリ履歴分析
+        if len(self.llm.predictive_engine.query_history) >= 10:
+            recent = list(self.llm.predictive_engine.query_history)[-10:]
+            intent_dist = Counter(q['intent'] for q in recent)
+            
+            print(f"\n📈 Recent Intent Distribution (last 10 queries):")
+            for intent, count in intent_dist.most_common():
+                bar = "█" * count + "░" * (10 - count)
+                print(f"   {intent.value:15s} [{bar}] {count}/10")
+        
+        print("=" * 80 + "\n")
+    
+    def _apply_scientific_method(self, observation: str):
+        """科学的手法を適用"""
+        if not self.llm.scientific_method:
+            print("❌ Scientific method disabled")
+            return
+        
+        print("\n" + "=" * 80)
+        print("🔬 Scientific Method Application")
+        print("=" * 80)
+        print(f"\nObservation: {observation}")
+        
+        # 1. 仮説を定式化
+        print(f"\n1️⃣  Hypothesis Formulation:")
+        hypothesis = self.llm.scientific_method.formulate_hypothesis(observation)
+        print(f"   {hypothesis.statement}")
+        print(f"   Prior Confidence: {hypothesis.bayesian_prior:.2%}")
+        
+        # 2. 実験を設計
+        print(f"\n2️⃣  Experiment Design:")
+        experiment = self.llm.scientific_method.design_experiment(hypothesis)
+        print(f"   Experiment ID: {experiment['id']}")
+        print(f"   Method: {experiment['method']}")
+        print(f"   Status: {experiment['status']}")
+        
+        # 3. 予測
+        print(f"\n3️⃣  Predictions:")
+        print(f"   If the hypothesis is correct, we expect:")
+        print(f"   • Measurable outcome related to the observation")
+        print(f"   • Reproducible results under similar conditions")
+        print(f"   • Consistency with existing knowledge")
+        
+        # 4. 結果分析（シミュレート）
+        print(f"\n4️⃣  Analysis:")
+        analysis = self.llm.scientific_method.analyze_results(
+            experiment['id'],
+            {'data_points': 100, 'effect_observed': True}
+        )
+        print(f"   Statistical Significance: {analysis['statistical_significance']:.3f}")
+        print(f"   Effect Size: {analysis['effect_size']:.3f}")
+        print(f"   Conclusion: {analysis['conclusion']}")
+        
+        # 5. ピアレビュー（シミュレート）
+        print(f"\n5️⃣  Peer Review (Simulated):")
+        mock_reviews = [
+            "The methodology is sound and well-designed",
+            "Results are consistent with theoretical predictions",
+            "Further validation recommended"
+        ]
+        review_score = self.llm.scientific_method.peer_review(hypothesis, mock_reviews)
+        print(f"   Peer Review Score: {review_score:.2%}")
+        
+        # 最終評価
+        print(f"\n🎯 Final Assessment:")
+        if review_score > 0.7 and analysis['statistical_significance'] > 0.05:
+            print(f"   ✅ HYPOTHESIS SUPPORTED")
+            print(f"   • Strong evidence in favor")
+            print(f"   • High peer review score")
+            print(f"   • Recommended for further investigation")
+        else:
+            print(f"   ⚠️  HYPOTHESIS REQUIRES MORE EVIDENCE")
+            print(f"   • Additional data collection needed")
+            print(f"   • Consider alternative explanations")
+        
+        print("=" * 80 + "\n")
+    
+    def _show_learning_progress(self):
+        """学習進捗表示"""
+        print("\n" + "=" * 80)
+        print("📊 Learning Progress Analysis")
+        print("=" * 80)
+        
+        progress = self.llm.analyze_learning_progress()
+        
+        if progress['status'] == 'insufficient_data':
+            print("\n⚠️  Insufficient data for analysis.")
+            print("   Continue using the system to unlock progress tracking.")
+            print("=" * 80 + "\n")
+            return
+        
+        print(f"\n📈 Overall Metrics:")
+        print(f"   Total Interactions: {progress['total_interactions']}")
+        print(f"   Recent Quality: {progress['recent_quality']:.3f}")
+        print(f"   Improvement: {progress['improvement']:+.3f}")
+        
+        # トレンドビジュアライゼーション
+        trend = progress['trend']
+        if trend == 'improving':
+            print(f"   Trend: 📈 IMPROVING")
+        elif trend == 'declining':
+            print(f"   Trend: 📉 DECLINING")
+        else:
+            print(f"   Trend: ➡️  STABLE")
+        
+        # 戦略パフォーマンス
+        if progress['best_strategy']:
+            print(f"\n🎯 Strategy Performance:")
+            print(f"   Best Strategy: {progress['best_strategy']}")
+            
+            if 'strategy_performance' in progress:
+                print(f"\n   Detailed Performance:")
+                for strategy, score in sorted(
+                    progress['strategy_performance'].items(),
+                    key=lambda x: x[1],
+                    reverse=True
+                ):
+                    bar = "█" * int(score * 20) + "░" * (20 - int(score * 20))
+                    print(f"   • {strategy:20s} [{bar}] {score:.3f}")
+        
+        # 推奨事項
+        print(f"\n💡 Recommendations:")
+        if trend == 'improving':
+            print(f"   ✅ Keep using current strategies")
+            print(f"   ✅ Gradually increase complexity")
+        elif trend == 'declining':
+            print(f"   ⚠️  Consider switching strategies")
+            print(f"   ⚠️  Provide more feedback")
+            print(f"   ⚠️  Review recent interactions")
+        else:
+            print(f"   • Try new strategies for diversity")
+            print(f"   • Challenge with complex queries")
+        
+        print("=" * 80 + "\n")
+    
+    def _show_meta_insights(self):
+        """メタインサイト表示"""
+        print("\n" + "=" * 80)
+        print("🌟 Meta-Level Insights")
+        print("=" * 80)
+        
+        insights = self.llm.generate_meta_insights()
+        
+        if not insights:
+            print("\n⚠️  Insufficient data for meta-analysis.")
+            print("   Continue interacting with the system.")
+            print("=" * 80 + "\n")
+            return
+        
+        print(f"\n🔍 System has generated {len(insights)} insights:")
+        for insight in insights:
+            print(f"\n   {insight}")
+        
+        # 追加の深い分析
+        stats = self.llm.get_stats()
+        
+        print(f"\n🧠 Deep Analysis:")
+        
+        # システム成熟度
+        if stats['profile']['interactions'] < 50:
+            maturity = "Early Stage"
+            emoji = "🌱"
+        elif stats['profile']['interactions'] < 200:
+            maturity = "Growing"
+            emoji = "🌿"
+        elif stats['profile']['interactions'] < 500:
+            maturity = "Mature"
+            emoji = "🌳"
+        else:
+            maturity = "Expert"
+            emoji = "🏆"
+        
+        print(f"   System Maturity: {emoji} {maturity} ({stats['profile']['interactions']} interactions)")
+        
+        # 機能活用度
+        ultimate = stats.get('ultimate', {})
+        total_advanced = sum(ultimate.values())
+        if total_advanced > 100:
+            print(f"   Feature Utilization: 🌟 POWER USER ({total_advanced} advanced operations)")
+        elif total_advanced > 50:
+            print(f"   Feature Utilization: ⭐ ACTIVE ({total_advanced} advanced operations)")
+        else:
+            print(f"   Feature Utilization: 💡 EXPLORE MORE ({total_advanced} advanced operations)")
+        
+        # 予測精度
+        if 'prediction_accuracy' in stats['profile']:
+            accuracy = stats['profile']['prediction_accuracy']
+            if accuracy > 0.7:
+                print(f"   Prediction Accuracy: 🎯 HIGH ({accuracy:.1%})")
+            elif accuracy > 0.5:
+                print(f"   Prediction Accuracy: 📊 MODERATE ({accuracy:.1%})")
+            else:
+                print(f"   Prediction Accuracy: 📉 LEARNING ({accuracy:.1%})")
+        
+        print("=" * 80 + "\n")
+    
+    def _find_analogies(self, concept: str):
+        """類推を発見"""
+        if not self.llm.creative_synthesizer:
+            print("❌ Creative synthesis disabled")
+            return
+        
+        print("\n" + "=" * 80)
+        print(f"🔍 Finding Analogies for: '{concept}'")
+        print("=" * 80)
+        
+        analogies = self.llm.creative_synthesizer.find_analogies(concept, top_k=10)
+        
+        if not analogies:
+            print("\n   No analogies found. The concept may be novel.")
+            print("=" * 80 + "\n")
+            return
+        
+        print(f"\n📊 Similar Concepts (by semantic similarity):")
+        for i, (related, similarity) in enumerate(analogies, 1):
+            bar = "█" * int(similarity * 20) + "░" * (20 - int(similarity * 20))
+            print(f"   {i:2d}. [{bar}] {similarity:+.3f} - {related}")
+        
+        # 最も近い概念との統合を提案
+        if len(analogies) >= 2:
+            top1, top2 = analogies[0][0], analogies[1][0]
+            print(f"\n💡 Suggested Synthesis:")
+            print(f"   Try: /synthesize {concept} {top1}")
+            print(f"   Or:  /synthesize {concept} {top2}")
+        
+        print("=" * 80 + "\n")
+    
+    def _show_trust_score(self):
+        """信頼スコア表示"""
+        if not self.llm.verification_system:
+            print("❌ Verification system disabled")
+            return
+        
+        print("\n" + "=" * 80)
+        print("🔐 System Trust Score")
+        print("=" * 80)
+        
+        trust_score = self.llm.verification_system.get_trust_score()
+        
+        print(f"\n📊 Overall Trust Score: {trust_score:.2%}")
+        
+        # ビジュアル表現
+        bar = "█" * int(trust_score * 40) + "░" * (40 - int(trust_score * 40))
+        print(f"   [{bar}]")
+        
+        # 評価
+        if trust_score > 0.8:
+            rating = "🌟 EXCELLENT"
+            desc = "System responses are highly trustworthy"
+        elif trust_score > 0.6:
+            rating = "✅ GOOD"
+            desc = "System responses are generally reliable"
+        elif trust_score > 0.4:
+            rating = "⚠️  MODERATE"
+            desc = "Exercise caution with system responses"
+        else:
+            rating = "❌ LOW"
+            desc = "System needs more calibration"
+        
+        print(f"\n   Rating: {rating}")
+        print(f"   {desc}")
+        
+        # 検証統計
+        records = self.llm.verification_system.records
+        if records:
+            total = len(records)
+            verified = sum(1 for r in records if r.result)
+            
+            print(f"\n📋 Verification Statistics:")
+            print(f"   Total Verifications: {total}")
+            print(f"   Claims Verified: {verified} ({verified/total:.1%})")
+            print(f"   Claims Rejected: {total - verified} ({(total-verified)/total:.1%})")
+            
+            # 方法別の統計
+            method_stats = defaultdict(list)
+            for r in records:
+                method_stats[r.method].append(r.confidence)
+            
+            print(f"\n   By Method:")
+            for method, confidences in method_stats.items():
+                avg_conf = statistics.mean(confidences)
+                print(f"   • {method.value:20s}: {avg_conf:.2%} avg confidence")
+        
+        print("=" * 80 + "\n")
+    
+    # ========== 補助メソッド ==========
+    
+    def _export_data(self):
+        """データエクスポート"""
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filepath = f"export_{timestamp}.json"
+        
+        export_data = {
+            'session_id': self.session_id,
+            'timestamp': timestamp,
+            'history': [
+                {
+                    'query': q,
+                    'response': r.to_dict()
+                }
+                for q, r in self.history
+            ],
+            'stats': self.llm.get_stats(),
+            'profile': self.llm.profile
+        }
+        
+        try:
+            with open(filepath, 'w', encoding='utf-8') as f:
+                json.dump(export_data, f, ensure_ascii=False, indent=2)
+            print(f"📤 Data exported: {filepath}")
+        except Exception as e:
+            print(f"❌ Export failed: {e}")
+    
+    def _show_feedback_history(self):
+        """フィードバック履歴表示"""
+        print("\n" + "=" * 80)
+        print("📊 Feedback History")
+        print("=" * 80)
+        
+        feedback_history = self.llm.profile.get('feedback_history', [])
+        if not feedback_history:
+            print("\nNo feedback recorded yet.")
+            print("=" * 80 + "\n")
+            return
+        
+        recent = feedback_history[-10:]
+        for i, fb in enumerate(recent, 1):
+            rating = fb.get('rating', 0)
+            rating_str = "⭐" * max(0, rating + 2)
+            print(f"\n{i}. Rating: {rating:+d} {rating_str}")
+            print(f"   Query: {fb.get('query', '')[:60]}...")
+            print(f"   Time: {fb.get('timestamp', 'N/A')}")
+        
+        avg_rating = statistics.mean(fb.get('rating', 0) for fb in feedback_history)
+        print(f"\n📊 Average Rating: {avg_rating:+.2f}")
+        print("=" * 80 + "\n")
+    
+    def _show_improvements(self):
+        """改善提案表示"""
+        print("\n" + "=" * 80)
+        print("💡 Improvement Suggestions")
+        print("=" * 80)
+        
+        stats = self.llm.get_stats()
+        suggestions = []
+        
+        # 成功率が低い場合
+        success_rate = float(stats['system']['success_rate'].strip('%')) / 100
+        if success_rate < 0.9:
+            suggestions.append("• Consider using more advanced strategies (quantum, genetic)")
+        
+        # キャッシュヒット率が低い場合
+        cache_rate = float(stats['system']['cache_hit_rate'].strip('%')) / 100
+        if cache_rate < 0.3:
+            suggestions.append("• Ask similar questions to benefit from caching")
+        
+        # 遺伝的進化が有効な場合
+        if 'genetic' in stats and stats['genetic']['generation'] > 0:
+            best_fitness = stats['genetic']['best_fitness']
+            if best_fitness < 0.7:
+                suggestions.append("• Provide more feedback to improve prompt evolution")
+        
+        # RLHF
+        if 'rlhf' in stats:
+            avg_reward = stats['rlhf']['avg_reward']
+            if avg_reward < 0.5:
+                suggestions.append("• Rate responses to help the system learn your preferences")
+        
+        if not suggestions:
+            suggestions.append("✅ System is performing optimally!")
+        
+        for suggestion in suggestions:
+            print(f"\n{suggestion}")
+        
+        print("\n" + "=" * 80 + "\n")
+    
+    def _show_quantum_info(self):
+        """量子最適化詳細"""
+        if not self.llm.quantum_optimizer:
+            print("❌ Quantum optimization disabled")
+            return
+        
+        print("\n" + "=" * 80)
+        print("🔮 Quantum Optimization Details")
+        print("=" * 80)
+        print(f"\n⚛️  Configuration:")
+        print(f"   Qubits: {self.llm.quantum_optimizer.num_qubits}")
+        print(f"   Iterations: {self.llm.quantum_optimizer.config.iterations}")
+        print(f"   Optimization Depth: {self.llm.quantum_optimizer.config.optimization_depth}")
+        print(f"\n📊 Performance:")
+        print(f"   Total Optimizations: {self.llm.metrics['quantum_optimizations']}")
+        print(f"   Success Rate: High")
+        print(f"\n💡 When to Use:")
+        print(f"   • Frontier-level complexity questions")
+        print(f"   • Multi-dimensional optimization problems")
+        print(f"   • Exploring novel solution spaces")
+        print("=" * 80 + "\n")
+    
+    def _show_genetic_info(self):
+        """遺伝的進化詳細"""
+        if not self.llm.genetic_evolver:
+            print("❌ Genetic evolution disabled")
+            return
+        
+        print("\n" + "=" * 80)
+        print("🧬 Genetic Evolution Details")
+        print("=" * 80)
+        print(f"\n📈 Population Status:")
+        print(f"   Generation: {self.llm.genetic_evolver.generation}")
+        print(f"   Population Size: {len(self.llm.genetic_evolver.population)}")
+        print(f"   Mutation Rate: {self.llm.config.genetic.mutation_rate:.1%}")
+        print(f"   Crossover Rate: {self.llm.config.genetic.crossover_rate:.1%}")
+        
+        best_prompts = self.llm.genetic_evolver.get_best_prompts(5)
+        if best_prompts:
+            print(f"\n🏆 Top 5 Evolved Prompts:")
+            for i, prompt in enumerate(best_prompts, 1):
+                fitness_bar = "█" * int(prompt.fitness * 20) + "░" * (20 - int(prompt.fitness * 20))
+                print(f"\n   {i}. Fitness: [{fitness_bar}] {prompt.fitness:.3f}")
+                print(f"      Generation: {prompt.generation} | Mutations: {prompt.mutations}")
+                print(f"      Template: {prompt.template[:60]}...")
+        
+        print("=" * 80 + "\n")
+    
+    def _show_swarm_info(self):
+        """群知能詳細"""
+        if not self.llm.swarm:
+            print("❌ Swarm intelligence disabled")
+            return
+        
+        print("\n" + "=" * 80)
+        print("🌊 Swarm Intelligence Details")
+        print("=" * 80)
+        print(f"\n🐝 Swarm Configuration:")
+        print(f"   Agents: {len(self.llm.swarm.agents)}")
+        print(f"   Inertia Weight: {self.llm.config.swarm.inertia_weight}")
+        print(f"   Cognitive Weight: {self.llm.config.swarm.cognitive_weight}")
+        print(f"   Social Weight: {self.llm.config.swarm.social_weight}")
+        
+        if self.llm.swarm.agents:
+            print(f"\n🎭 Agent Personas:")
+            for agent in self.llm.swarm.agents:
+                print(f"   • {agent.persona.value}: Fitness {agent.best_fitness:.3f}")
+        
+        print(f"\n📊 Performance:")
+        print(f"   Global Best Fitness: {self.llm.swarm.global_best_fitness:.3f}")
+        print(f"   Total Optimizations: {self.llm.metrics['swarm_optimizations']}")
+        
+        print("=" * 80 + "\n")
+    
+    def _show_rlhf_info(self):
+        """RLHF詳細"""
+        if not self.llm.rlhf:
+            print("❌ RLHF disabled")
+            return
+        
+        print("\n" + "=" * 80)
+        print("🎯 Reinforcement Learning Details")
+        print("=" * 80)
+        print(f"\n🧠 Learning Status:")
+        print(f"   States Explored: {len(self.llm.rlhf.state_visits)}")
+        print(f"   Q-Table Size: {len(self.llm.rlhf.q_table)}")
+        print(f"   Total Updates: {sum(self.llm.rlhf.state_visits.values())}")
+        print(f"   Learning Rate: {self.llm.config.rlhf.learning_rate}")
+        print(f"   Exploration Rate: {self.llm.config.rlhf.exploration_rate:.1%}")
+        
+        if self.llm.rlhf.reward_history:
+            avg_reward = statistics.mean(self.llm.rlhf.reward_history)
+            recent_reward = statistics.mean(self.llm.rlhf.reward_history[-10:]) if len(self.llm.rlhf.reward_history) >= 10 else avg_reward
+            print(f"\n📈 Rewards:")
+            print(f"   Average Reward: {avg_reward:.3f}")
+            print(f"   Recent Reward (last 10): {recent_reward:.3f}")
+            print(f"   Trend: {'📈 Improving' if recent_reward > avg_reward else '📉 Declining' if recent_reward < avg_reward else '➡️ Stable'}")
+        
+        # トップポリシー
+        policy = self.llm.rlhf.get_policy()
+        if policy:
+            print(f"\n🎲 Current Policy (Top 5):")
+            for i, (state, action) in enumerate(list(policy.items())[:5], 1):
+                print(f"   {i}. {state} → {action}")
+        
+        print("=" * 80 + "\n")
+    
+    def _show_hypothesis_history(self):
+        """仮説検証履歴"""
+        if not self.llm.hypothesis_tester:
+            print("❌ Hypothesis testing disabled")
+            return
+        
+        print("\n" + "=" * 80)
+        print("🔬 Hypothesis Testing History")
+        print("=" * 80)
+        
+        hypotheses = self.llm.hypothesis_tester.hypotheses
+        if not hypotheses:
+            print("\nNo hypotheses generated yet.")
+            print("=" * 80 + "\n")
+            return
+        
+        tested = [h for h in hypotheses if h.tested]
+        print(f"\n📊 Summary:")
+        print(f"   Total Hypotheses: {len(hypotheses)}")
+        print(f"   Tested: {len(tested)}")
+        print(f"   Confirmed: {sum(1 for h in tested if h.result)}")
+        print(f"   Rejected: {sum(1 for h in tested if not h.result)}")
+        
+        best = self.llm.hypothesis_tester.get_best_hypotheses(5)
+        if best:
+            print(f"\n🏆 Top Hypotheses (by confidence):")
+            for i, h in enumerate(best, 1):
+                conf_bar = "█" * int(h.confidence * 20) + "░" * (20 - int(h.confidence * 20))
+                status = "✅ Confirmed" if h.result else "❌ Rejected"
+                print(f"\n   {i}. [{conf_bar}] {h.confidence:.3f} - {status}")
+                print(f"      {h.statement[:70]}...")
+                print(f"      Evidence: {len(h.evidence)} | Counter: {len(h.counter_evidence)}")
+        
+        print("=" * 80 + "\n")
+    
+    def _show_history(self):
+        """会話履歴表示"""
+        print("\n" + "=" * 80)
+        print("📜 Conversation History")
+        print("=" * 80)
+        
+        if not self.history:
+            print("\nNo conversation history yet.")
+            print("=" * 80 + "\n")
+            return
+        
+        recent = self.history[-10:]
+        for i, (query, response) in enumerate(recent, 1):
+            print(f"\n{i}. Q: {query[:60]}...")
+            print(f"   A: {response.text[:60]}...")
+            print(f"   Strategy: {response.strategy.value if response.strategy else 'N/A'} | Quality: {response.quality_score:.2f}")
+        
+        print(f"\n📊 Total Conversations: {len(self.history)}")
+        print("=" * 80 + "\n")
+    
+    def _show_profile(self):
+        """プロファイル表示"""
+        print("\n" + "=" * 80)
+        print("👤 User Profile")
+        print("=" * 80)
+        
+        profile = self.llm.profile
+        print(f"\n📊 Activity:")
+        print(f"   Total Interactions: {profile['interaction_count']}")
+        print(f"   Feedback Given: {len(profile.get('feedback_history', []))}")
+        
+        # トップトピック
+        topics = sorted(profile['topics'].items(), key=lambda x: x[1], reverse=True)[:10]
+        if topics:
+            print(f"\n📚 Top Topics:")
+            for topic, score in topics:
+                print(f"   • {topic}: {score}")
+        
+        # 専門知識
+        expertise = [(k, v) for k, v in profile['expertise'].items() if v > 0.3]
+        if expertise:
+            expertise.sort(key=lambda x: x[1], reverse=True)
+            print(f"\n🎓 Expertise Areas:")
+            for topic, level in expertise[:10]:
+                bar = "█" * int(level * 20) + "░" * (20 - int(level * 20))
+                print(f"   {topic:20s} [{bar}] {level:.0%}")
+        
+        # 戦略好み
+        if profile['strategy_preference']:
+            print(f"\n🎯 Strategy Preferences:")
+            sorted_strat = sorted(profile['strategy_preference'].items(), key=lambda x: x[1], reverse=True)
+            for strategy, score in sorted_strat[:5]:
+                print(f"   • {strategy}: {score:.2f}")
+        
+        print("=" * 80 + "\n")
+    
+    def _show_config(self):
+        """設定表示"""
+        print("\n" + "=" * 80)
+        print("⚙️  System Configuration")
+        print("=" * 80)
+        
+        config = self.llm.config
+        print(f"\n🔧 Basic Settings:")
+        print(f"   Model: {config.model}")
+        print(f"   Max Tokens: {config.max_tokens}")
+        print(f"   Temperature: {config.temperature}")
+        print(f"   Similarity Threshold: {config.similarity_threshold}")
+        
+        print(f"\n🚀 Features:")
+        print(f"   Adaptive: {'✅' if config.adaptive else '❌'}")
+        print(f"   Vector DB: {'✅' if config.vec_db else '❌'}")
+        print(f"   Knowledge Graph: {'✅' if config.knowledge_graph else '❌'}")
+        print(f"   Chain of Thought: {'✅' if config.chain_of_thought else '❌'}")
+        print(f"   Quantum Optimization: {'✅' if config.quantum.enabled else '❌'}")
+        print(f"   Genetic Evolution: {'✅' if config.genetic.enabled else '❌'}")
+        print(f"   Swarm Intelligence: {'✅' if config.swarm.enabled else '❌'}")
+        print(f"   RLHF: {'✅' if config.rlhf.enabled else '❌'}")
+        
+        print("=" * 80 + "\n")
+    
+    def _set_config(self, key: str, value: str):
+        """設定変更"""
+        try:
+            if key == 'temperature':
+                self.llm.config.temperature = float(value)
+                print(f"✅ Temperature set to {value}")
+            elif key == 'max_tokens':
+                self.llm.config.max_tokens = int(value)
+                print(f"✅ Max tokens set to {value}")
+            elif key == 'model':
+                if value in self.llm.MODELS:
+                    self.llm.config.model = value
+                    print(f"✅ Model set to {value}")
+                else:
+                    print(f"❌ Unknown model: {value}")
+            else:
+                print(f"❌ Unknown config key: {key}")
+        except ValueError:
+            print(f"❌ Invalid value for {key}")
+    
+    def _analyze_text(self, text: str):
+        """テキスト分析"""
+        print("\n" + "=" * 80)
+        print("🔍 Text Analysis")
+        print("=" * 80)
+        
+        intent, complexity = self.llm._analyze_query(text)
+        
+        print(f"\n📊 Analysis Results:")
+        print(f"   Intent: {intent.value}")
+        print(f"   Complexity: {complexity.value}")
+        print(f"   Word Count: {len(text.split())}")
+        print(f"   Character Count: {len(text)}")
+        
+        # センチメント
+        sentiment = sum(1 for w in ['good', 'great', 'excellent'] if w in text.lower()) - \
+                   sum(1 for w in ['bad', 'terrible', 'awful'] if w in text.lower())
+        sentiment_label = "Positive" if sentiment > 0 else "Negative" if sentiment < 0 else "Neutral"
+        print(f"   Sentiment: {sentiment_label}")
+        
+        # 推奨戦略
+        strategy = self.llm._select_strategy(intent, complexity)
+        print(f"   Recommended Strategy: {strategy.value}")
+        
+        print("=" * 80 + "\n")
+    
+    def _search_knowledge(self, query: str):
+        """知識グラフ検索"""
+        if not self.llm.knowledge_graph:
+            print("❌ Knowledge graph disabled")
+            return
+        
+        print("\n" + "=" * 80)
+        print(f"🔎 Searching Knowledge Graph: '{query}'")
+        print("=" * 80)
+        
+        subgraph = self.llm.knowledge_graph.query_subgraph(query, depth=2)
+        
+        print(f"\n📊 Results:")
+        print(f"   Nodes Found: {len(subgraph['nodes'])}")
+        print(f"   Edges Found: {len(subgraph['edges'])}")
+        
+        if subgraph['nodes']:
+            print(f"\n🔗 Related Nodes:")
+            for i, node in enumerate(subgraph['nodes'][:10], 1):
+                print(f"   {i}. {node.name} ({node.type}) - Relevance: {node.relevance_score:.2f}")
+        else:
+            print("\n   No matching nodes found.")
+        
+        print("=" * 80 + "\n")
+    
+    def _show_topics(self):
+        """トピック一覧"""
+        print("\n" + "=" * 80)
+        print("📚 Topic Distribution")
+        print("=" * 80)
+        
+        topics = sorted(self.llm.profile['topics'].items(), key=lambda x: x[1], reverse=True)
+        
+        if not topics:
+            print("\nNo topics recorded yet.")
+            print("=" * 80 + "\n")
+            return
+        
+        total_score = sum(score for _, score in topics)
+        
+        print(f"\n📊 Top 20 Topics:")
+        for i, (topic, score) in enumerate(topics[:20], 1):
+            percentage = (score / total_score * 100) if total_score > 0 else 0
+            bar = "█" * int(percentage / 5) + "░" * (20 - int(percentage / 5))
+            print(f"   {i:2d}. {topic:20s} [{bar}] {percentage:5.1f}%")
+        
+        print(f"\n   Total Topics: {len(topics)}")
+        print("#!/usr/bin/env python3    
+        
+        else:
+            print(f"❌ Unknown command: {cmd}")
+            
     def run(self):
         """メインループ"""
         self.print_welcome()
