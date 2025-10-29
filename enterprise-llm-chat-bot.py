@@ -197,7 +197,6 @@ def format_response_embed(response, query: str, user: discord.User) -> discord.E
     
     return embed
 
-
 # ==================== Botイベント ====================
 
 # 定期保存タスク（on_readyの外に定義）
@@ -216,7 +215,7 @@ async def auto_save():
 
 @bot.event
 async def on_ready():
-    """Bot起動時"""
+    """Bot起動時 - 統合版"""
     global llm
     
     print(f'✅ {bot.user} logged in')
@@ -290,9 +289,10 @@ async def on_ready():
         print(f'✅ Synced {len(synced)} new slash commands')
         
         # 同期されたコマンド一覧を表示
-        print('📋 Available commands:')
-        for cmd in synced:
-            print(f'   • /{cmd.name}: {cmd.description}')
+        if synced:
+            print('📋 Available commands:')
+            for cmd in synced:
+                print(f'   • /{cmd.name}: {cmd.description}')
         
     except Exception as e:
         print(f'❌ Command sync error: {e}')
@@ -311,35 +311,6 @@ async def on_ready():
     
     # 定期保存タスク開始
     bot.loop.create_task(auto_save())
-
-
-@bot.event
-async def on_message(message: discord.Message):
-    """メッセージ受信時"""
-    if message.author.bot:
-        return
-    
-    # メンションされた場合は会話モード
-    if bot.user in message.mentions:
-        query = message.content.replace(f'<@{bot.user.id}>', '').strip()
-        
-        if not query:
-            await message.channel.send('❓ 質問を入力してください')
-            return
-        
-        await handle_query(message, query)
-
-async def auto_save():
-    """定期的にデータを保存"""
-    await bot.wait_until_ready()
-    while not bot.is_closed():
-        await asyncio.sleep(1800)  # 30分
-        if llm:
-            try:
-                llm.save_state('discord_quantum_state.json')
-                print('💾 Auto-saved state')
-            except Exception as e:
-                print(f'❌ Auto-save failed: {e}')
 
 
 @bot.event
@@ -424,6 +395,70 @@ async def handle_query(message: discord.Message, query: str):
 
 
 # ==================== スラッシュコマンド ====================
+
+async def handle_query(message: discord.Message, query: str):
+    """クエリ処理"""
+    if not llm:
+        await message.channel.send('❌ システムが初期化されていません')
+        return
+    
+    user_id = message.author.id
+    
+    # タイピングインジケーター
+    async with message.channel.typing():
+        try:
+            # クエリ実行
+            response = llm.query(query)
+            
+            # セッションデータ更新
+            session_data['total_queries'] += 1
+            if response.success:
+                session_data['successful_queries'] += 1
+            if response.quantum_optimized:
+                session_data['quantum_optimizations'] += 1
+            if response.genetic_fitness > 0:
+                session_data['genetic_evolutions'] += 1
+            if response.swarm_consensus > 0:
+                session_data['swarm_optimizations'] += 1
+            
+            # ユーザー履歴に追加
+            if user_id not in user_conversations:
+                user_conversations[user_id] = []
+            
+            user_conversations[user_id].append({
+                'query': query[:200],
+                'response': response.text[:200],
+                'quality': response.quality_score,
+                'strategy': response.strategy.value if response.strategy else None,
+                'timestamp': datetime.now().isoformat()
+            })
+            
+            # 最新50件のみ保持
+            if len(user_conversations[user_id]) > 50:
+                user_conversations[user_id] = user_conversations[user_id][-50:]
+            
+            # Embed作成
+            embed = format_response_embed(response, query, message.author)
+            
+            await message.reply(embed=embed)
+            
+            # 長い応答は分割送信
+            if len(response.text) > 4000:
+                remaining = response.text[4000:]
+                chunks = [remaining[i:i+1900] for i in range(0, len(remaining), 1900)]
+                for chunk in chunks:
+                    await message.channel.send(f"```\n{chunk}\n```")
+            
+        except Exception as e:
+            error_embed = discord.Embed(
+                title="❌ Error",
+                description=f"処理中にエラーが発生しました: {str(e)}",
+                color=discord.Color.red()
+            )
+            await message.reply(embed=error_embed)
+            print(f"Error: {e}")
+            traceback.print_exc()
+
 
 @tree.command(name='swarm', description='群知能ステータスを表示')
 async def swarm_command(interaction: discord.Interaction):
