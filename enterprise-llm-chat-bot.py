@@ -212,7 +212,6 @@ async def auto_save():
             except Exception as e:
                 print(f'❌ Auto-save failed: {e}')
 
-
 @bot.event
 async def on_ready():
     """Bot起動時 - 統合版"""
@@ -272,27 +271,21 @@ async def on_ready():
         traceback.print_exc()
         sys.exit(1)
     
-    # 🔧 スラッシュコマンドをクリアして同期
+    # 🔧 スラッシュコマンドを同期（クリアは削除）
     try:
-        print('🔄 Clearing old commands...')
+        print('🔄 Syncing commands...')
         
-        # グローバルコマンドをクリア
-        tree.clear_commands(guild=None)
-        await tree.sync()
-        print('🗑️  Cleared old global commands')
-        
-        # 少し待機
-        await asyncio.sleep(1)
-        
-        # 新しいコマンドを同期
+        # コマンドを同期（既存のコマンドは自動的に上書きされる）
         synced = await tree.sync()
-        print(f'✅ Synced {len(synced)} new slash commands')
+        print(f'✅ Synced {len(synced)} slash commands')
         
         # 同期されたコマンド一覧を表示
         if synced:
             print('📋 Available commands:')
             for cmd in synced:
                 print(f'   • /{cmd.name}: {cmd.description}')
+        else:
+            print('⚠️ No commands were synced!')
         
     except Exception as e:
         print(f'❌ Command sync error: {e}')
