@@ -200,6 +200,20 @@ def format_response_embed(response, query: str, user: discord.User) -> discord.E
 
 # ==================== Botイベント ====================
 
+# 定期保存タスク（on_readyの外に定義）
+async def auto_save():
+    """定期的にデータを保存"""
+    await bot.wait_until_ready()
+    while not bot.is_closed():
+        await asyncio.sleep(1800)  # 30分
+        if llm:
+            try:
+                llm.save_state('discord_quantum_state.json')
+                print('💾 Auto-saved state')
+            except Exception as e:
+                print(f'❌ Auto-save failed: {e}')
+
+
 @bot.event
 async def on_ready():
     """Bot起動時"""
@@ -259,12 +273,30 @@ async def on_ready():
         traceback.print_exc()
         sys.exit(1)
     
-    # スラッシュコマンドを同期
+    # 🔧 スラッシュコマンドをクリアして同期
     try:
+        print('🔄 Clearing old commands...')
+        
+        # グローバルコマンドをクリア
+        tree.clear_commands(guild=None)
+        await tree.sync()
+        print('🗑️  Cleared old global commands')
+        
+        # 少し待機
+        await asyncio.sleep(1)
+        
+        # 新しいコマンドを同期
         synced = await tree.sync()
-        print(f'✅ Synced {len(synced)} slash commands')
+        print(f'✅ Synced {len(synced)} new slash commands')
+        
+        # 同期されたコマンド一覧を表示
+        print('📋 Available commands:')
+        for cmd in synced:
+            print(f'   • /{cmd.name}: {cmd.description}')
+        
     except Exception as e:
         print(f'❌ Command sync error: {e}')
+        traceback.print_exc()
     
     # ステータス設定
     await bot.change_presence(
@@ -275,6 +307,39 @@ async def on_ready():
     )
     
     print('=' * 80)
+    print('✨ Bot is ready to use!')
+    
+    # 定期保存タスク開始
+    bot.loop.create_task(auto_save())
+
+
+@bot.event
+async def on_message(message: discord.Message):
+    """メッセージ受信時"""
+    if message.author.bot:
+        return
+    
+    # メンションされた場合は会話モード
+    if bot.user in message.mentions:
+        query = message.content.replace(f'<@{bot.user.id}>', '').strip()
+        
+        if not query:
+            await message.channel.send('❓ 質問を入力してください')
+            return
+        
+        await handle_query(message, query)
+
+async def auto_save():
+    """定期的にデータを保存"""
+    await bot.wait_until_ready()
+    while not bot.is_closed():
+        await asyncio.sleep(1800)  # 30分
+        if llm:
+            try:
+                llm.save_state('discord_quantum_state.json')
+                print('💾 Auto-saved state')
+            except Exception as e:
+                print(f'❌ Auto-save failed: {e}')
 
 
 @bot.event
@@ -914,30 +979,6 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
                 f'❌ エラーが発生しました: {str(error)}',
                 ephemeral=True
             )
-
-
-# ==================== 定期タスク ====================
-
-@bot.event
-async def on_ready():
-    """Bot起動時 - 定期タスク開始"""
-    # 前の on_ready の内容に加えて
-    
-    # 定期保存タスク（30分ごと）
-    async def auto_save():
-        await bot.wait_until_ready()
-        while not bot.is_closed():
-            await asyncio.sleep(1800)  # 30分
-            if llm:
-                try:
-                    llm.save_state('discord_quantum_state.json')
-                    print('💾 Auto-saved state')
-                except Exception as e:
-                    print(f'❌ Auto-save failed: {e}')
-    
-    # タスク開始
-    bot.loop.create_task(auto_save())
-
 
 @tree.command(name='rlhf', description='強化学習情報を表示')
 async def rlhf_command(interaction: discord.Interaction):
