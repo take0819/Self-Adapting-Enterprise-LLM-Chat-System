@@ -594,7 +594,7 @@ async def adversarial_command(interaction: discord.Interaction):
     consistency_scores = []
     for i, adv_q in enumerate(adversarial_queries[:3], 1):
         try:
-            adv_response = llm.query(adv_q)
+            adv_response = await llm_query_asnyc(adv_q)
             
             # 類似度計算（簡易）
             orig_words = set(last_conv['response'].lower().split())
