@@ -411,8 +411,11 @@ async def handle_query(message: discord.Message, query: str):
 @tree.command(name='swarm', description='群知能ステータスを表示')
 async def swarm_command(interaction: discord.Interaction):
     """群知能"""
+    # deferを追加
+    await interaction.response.defer()
+    
     if not llm or not llm.swarm:
-        await interaction.response.send_message('❌ 群知能が無効です', ephemeral=True)
+        await interaction.followup.send('❌ 群知能が無効です', ephemeral=True)
         return
     
     embed = discord.Embed(
@@ -450,7 +453,7 @@ async def swarm_command(interaction: discord.Interaction):
         inline=False
     )
     
-    await interaction.response.send_message(embed=embed)
+    await interaction.followup.send(embed=embed)
 
 
 # ==================== 追加のユーティリティコマンド ====================
@@ -458,6 +461,9 @@ async def swarm_command(interaction: discord.Interaction):
 @tree.command(name='clear', description='会話履歴をクリア')
 async def clear_command(interaction: discord.Interaction):
     """履歴クリア"""
+    # deferを追加
+    await interaction.response.defer(ephemeral=True)
+    
     user_id = interaction.user.id
     
     if user_id in user_conversations:
@@ -466,8 +472,7 @@ async def clear_command(interaction: discord.Interaction):
     if llm:
         llm.context_window.clear()
     
-    await interaction.response.send_message('🗑️ 会話履歴をクリアしました', ephemeral=True)
-
+    await interaction.followup.send('🗑️ 会話履歴をクリアしました', ephemeral=True)
 @tree.command(name='talk', description='AIとの会話モードを切り替え')
 @app_commands.describe(mode='会話モードのON/OFF')
 @app_commands.choices(mode=[
@@ -476,6 +481,9 @@ async def clear_command(interaction: discord.Interaction):
 ])
 async def talk_command(interaction: discord.Interaction, mode: str):
     """会話モード切り替え"""
+    # 最初に応答を確保（重要！）
+    await interaction.response.defer(ephemeral=True)
+    
     user_id = interaction.user.id
     
     if mode.lower() == 'on':
@@ -525,7 +533,8 @@ async def talk_command(interaction: discord.Interaction, mode: str):
             inline=False
         )
     
-    await interaction.response.send_message(embed=embed, ephemeral=True)
+    # deferした後はfollowupを使用
+    await interaction.followup.send(embed=embed, ephemeral=True)
 
 @tree.command(name='analogies', description='概念の類推を発見')
 async def analogies_command(interaction: discord.Interaction, concept: str):
@@ -572,8 +581,11 @@ async def analogies_command(interaction: discord.Interaction, concept: str):
 @tree.command(name='trust', description='システムの信頼スコアを表示')
 async def trust_command(interaction: discord.Interaction):
     """信頼スコア"""
+    # deferを追加
+    await interaction.response.defer()
+    
     if not llm or not llm.verification_system:
-        await interaction.response.send_message('❌ 検証システムが無効です', ephemeral=True)
+        await interaction.followup.send('❌ 検証システムが無効です', ephemeral=True)
         return
     
     trust_score = llm.verification_system.get_trust_score()
@@ -630,7 +642,7 @@ async def trust_command(interaction: discord.Interaction):
             inline=False
         )
     
-    await interaction.response.send_message(embed=embed)
+    await interaction.followup.send(embed=embed)
 
 
 @tree.command(name='adversarial', description='敵対的テストを実行')
@@ -941,7 +953,6 @@ async def config_command(interaction: discord.Interaction):
         inline=False
     )
     
-    # 究極機能
     ultimate_features = []
     if config.adversarial_testing: ultimate_features.append("✅ Adversarial Testing")
     if config.causal_reasoning: ultimate_features.append("✅ Causal Reasoning")
@@ -1039,8 +1050,11 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
 @tree.command(name='rlhf', description='強化学習情報を表示')
 async def rlhf_command(interaction: discord.Interaction):
     """RLHF"""
+    # deferを追加
+    await interaction.response.defer()
+    
     if not llm or not llm.rlhf:
-        await interaction.response.send_message('❌ RLHFが無効です', ephemeral=True)
+        await interaction.followup.send('❌ RLHFが無効です', ephemeral=True)
         return
     
     embed = discord.Embed(
@@ -1076,14 +1090,16 @@ async def rlhf_command(interaction: discord.Interaction):
             inline=False
         )
     
-    await interaction.response.send_message(embed=embed)
-
+    await interaction.followup.send(embed=embed)
 
 @tree.command(name='knowledge', description='知識グラフ情報を表示')
 async def knowledge_command(interaction: discord.Interaction):
     """知識グラフ"""
+    # deferを追加
+    await interaction.response.defer()
+    
     if not llm or not llm.knowledge_graph:
-        await interaction.response.send_message('❌ 知識グラフが無効です', ephemeral=True)
+        await interaction.followup.send('❌ 知識グラフが無効です', ephemeral=True)
         return
     
     kg = llm.knowledge_graph
@@ -1115,10 +1131,8 @@ async def knowledge_command(interaction: discord.Interaction):
             inline=True
         )
     
-    await interaction.response.send_message(embed=embed)
+    await interaction.followup.send(embed=embed)
 
-
-# ==================== 究極の機能コマンド ====================
 
 @tree.command(name='causal', description='因果推論を実行')
 async def causal_command(interaction: discord.Interaction, event: str):
@@ -1415,14 +1429,17 @@ async def scientific_command(interaction: discord.Interaction, observation: str)
 @tree.command(name='progress', description='学習進捗を分析')
 async def progress_command(interaction: discord.Interaction):
     """学習進捗"""
+    # 最初に応答を確保
+    await interaction.response.defer(ephemeral=True)
+    
     if not llm:
-        await interaction.response.send_message('❌ システムが初期化されていません', ephemeral=True)
+        await interaction.followup.send('❌ システムが初期化されていません', ephemeral=True)
         return
     
     progress = llm.analyze_learning_progress()
     
     if progress['status'] == 'insufficient_data':
-        await interaction.response.send_message(
+        await interaction.followup.send(
             '⚠️ データ不足\n継続利用で進捗追跡が可能になります',
             ephemeral=True
         )
@@ -1473,7 +1490,7 @@ async def progress_command(interaction: discord.Interaction):
                 inline=False
             )
     
-    await interaction.response.send_message(embed=embed, ephemeral=True)
+    await interaction.followup.send(embed=embed, ephemeral=True)
 
 
 @tree.command(name='insights', description='メタインサイトを生成')
