@@ -83,6 +83,9 @@ session_data = {
     'swarm_optimizations': 0
 }
 
+# 会話モード管理
+talk_mode_users: Dict[int, bool] = {}  # 追加
+
 
 # ==================== ユーティリティ ====================
 
@@ -312,7 +315,24 @@ async def on_message(message: discord.Message):
     if message.author.bot:
         return
     
-    # メンションされた場合は会話モード
+    user_id = message.author.id
+    
+    # 会話モードチェック
+    if user_id in talk_mode_users and talk_mode_users[user_id]:
+        # 会話モード: 全てのメッセージに反応
+        query = message.content.strip()
+        
+        if not query:
+            return
+        
+        # スラッシュコマンドは無視
+        if query.startswith('/'):
+            return
+        
+        await handle_query(message, query)
+        return
+    
+    # メンションされた場合は会話モード（従来通り）
     if bot.user in message.mentions:
         query = message.content.replace(f'<@{bot.user.id}>', '').strip()
         
@@ -335,7 +355,7 @@ async def handle_query(message: discord.Message, query: str):
     async with message.channel.typing():
         try:
             # クエリ実行
-            response = llm.query(query)
+            response = await llm.query_async(query)
             
             # セッションデータ更新
             session_data['total_queries'] += 1
@@ -385,8 +405,7 @@ async def handle_query(message: discord.Message, query: str):
             await message.reply(embed=error_embed)
             print(f"Error: {e}")
             traceback.print_exc()
-
-
+            
 # ==================== スラッシュコマンド ====================
 
 @tree.command(name='swarm', description='群知能ステータスを表示')
@@ -449,6 +468,64 @@ async def clear_command(interaction: discord.Interaction):
     
     await interaction.response.send_message('🗑️ 会話履歴をクリアしました', ephemeral=True)
 
+@tree.command(name='talk', description='AIとの会話モードを切り替え')
+@app_commands.describe(mode='会話モードのON/OFF')
+@app_commands.choices(mode=[
+    app_commands.Choice(name='ON', value='on'),
+    app_commands.Choice(name='OFF', value='off')
+])
+async def talk_command(interaction: discord.Interaction, mode: str):
+    """会話モード切り替え"""
+    user_id = interaction.user.id
+    
+    if mode.lower() == 'on':
+        # モードをオン
+        talk_mode_users[user_id] = True
+        embed = discord.Embed(
+            title="💬 Talk Mode: ON",
+            description="会話モードを開始しました！\n"
+                       "このチャンネルでメッセージを送信すると、AIが自動的に返答します",
+            color=discord.Color.green()
+        )
+        embed.add_field(
+            name="🎯 使い方",
+            value="• 普通にメッセージを送信するだけでOK\n"
+                  "• `/talk mode:off` でモードを終了\n"
+                  "• `/clear` で会話履歴をリセット",
+            inline=False
+        )
+        embed.add_field(
+            name="✨ 機能",
+            value="• 全ての高度なAI機能が利用可能\n"
+                  "• 会話履歴が自動的に保存\n"
+                  "• コンテキストを理解した返答",
+            inline=False
+        )
+        embed.add_field(
+            name="⚠️ 注意",
+            value="• Botのメッセージには反応しません\n"
+                  "• 他のユーザーのメッセージには反応しません",
+            inline=False
+        )
+    else:  # mode == 'off'
+        # モードをオフ
+        if user_id in talk_mode_users:
+            talk_mode_users[user_id] = False
+            del talk_mode_users[user_id]
+        
+        embed = discord.Embed(
+            title="💬 Talk Mode: OFF",
+            description="会話モードを終了しました",
+            color=discord.Color.red()
+        )
+        embed.add_field(
+            name="ℹ️ 使い方",
+            value="`/talk mode:on` で会話モードを開始できます\n"
+                  "Botにメンション（@llm）して質問することもできます",
+            inline=False
+        )
+    
+    await interaction.response.send_message(embed=embed, ephemeral=True)
 
 @tree.command(name='analogies', description='概念の類推を発見')
 async def analogies_command(interaction: discord.Interaction, concept: str):
@@ -491,7 +568,6 @@ async def analogies_command(interaction: discord.Interaction, concept: str):
         )
     
     await interaction.followup.send(embed=embed)
-
 
 @tree.command(name='trust', description='システムの信頼スコアを表示')
 async def trust_command(interaction: discord.Interaction):
@@ -594,7 +670,7 @@ async def adversarial_command(interaction: discord.Interaction):
     consistency_scores = []
     for i, adv_q in enumerate(adversarial_queries[:3], 1):
         try:
-            adv_response = await llm_query_asnyc(adv_q)
+            adv_response = await llm.query_async(adv_q)  # 修正
             
             # 類似度計算（簡易）
             orig_words = set(last_conv['response'].lower().split())
@@ -603,7 +679,8 @@ async def adversarial_command(interaction: discord.Interaction):
             if orig_words and adv_words:
                 similarity = len(orig_words & adv_words) / len(orig_words | adv_words)
                 consistency_scores.append(similarity)
-        except:
+        except Exception as e:
+            print(f"Adversarial test error: {e}")
             pass
     
     if consistency_scores:
@@ -640,7 +717,6 @@ async def adversarial_command(interaction: discord.Interaction):
         )
     
     await interaction.followup.send(embed=embed)
-
 
 @tree.command(name='export', description='データをエクスポート')
 async def export_command(interaction: discord.Interaction):
@@ -712,7 +788,7 @@ async def compare_command(interaction: discord.Interaction, query: str):
     for strategy in strategies:
         try:
             # 一時的に戦略を固定（簡易版）
-            response = llm.query(query)
+            response = await llm.query_async(query)  # 修正
             results.append({
                 'strategy': strategy.value if hasattr(strategy, 'value') else str(strategy),
                 'quality': response.quality_score,
@@ -720,7 +796,8 @@ async def compare_command(interaction: discord.Interaction, query: str):
                 'latency': response.latency,
                 'cost': response.cost
             })
-        except:
+        except Exception as e:
+            print(f"Compare error for {strategy}: {e}")
             pass
     
     if results:
@@ -742,6 +819,12 @@ async def compare_command(interaction: discord.Interaction, query: str):
         embed.add_field(
             name="🏆 Best Strategy",
             value=f"**{best['strategy'].upper()}** with {best['quality']:.0%} quality",
+            inline=False
+        )
+    else:
+        embed.add_field(
+            name="❌ Error",
+            value="全ての戦略でエラーが発生しました",
             inline=False
         )
     
@@ -777,17 +860,26 @@ async def benchmark_command(interaction: discord.Interaction):
     for query in test_queries:
         import time
         start = time.time()
-        response = llm.query(query)
-        elapsed = (time.time() - start) * 1000
-        
-        results.append({
-            'query': query[:30],
-            'latency': elapsed,
-            'quality': response.quality_score,
-            'strategy': response.strategy.value if response.strategy else 'direct'
-        })
+        try:
+            response = await llm.query_async(query)  # 修正
+            elapsed = (time.time() - start) * 1000
+            
+            results.append({
+                'query': query[:30],
+                'latency': elapsed,
+                'quality': response.quality_score,
+                'strategy': response.strategy.value if response.strategy else 'direct'
+            })
+        except Exception as e:
+            print(f"Benchmark error for '{query}': {e}")
+            continue
+    
+    if not results:
+        await interaction.followup.send('❌ ベンチマークテストが全て失敗しました')
+        return
     
     # 統計
+    import statistics
     avg_latency = statistics.mean(r['latency'] for r in results)
     avg_quality = statistics.mean(r['quality'] for r in results)
     
@@ -1483,6 +1575,193 @@ async def session_command(interaction: discord.Interaction):
     )
     
     await interaction.response.send_message(embed=embed)
+
+@tree.command(name='info', description='システムとユーザーの詳細情報を表示')
+async def info_command(interaction: discord.Interaction):
+    """詳細情報"""
+    await interaction.response.defer(thinking=True)
+    
+    user_id = interaction.user.id
+    uptime = datetime.now() - session_data['start_time']
+    
+    # メインEmbed
+    embed = discord.Embed(
+        title="ℹ️ System & User Information",
+        description="Quantum-Enhanced AI System v3.5γ ULTIMATE",
+        color=discord.Color.blue(),
+        timestamp=datetime.now()
+    )
+    
+    # 🤖 Bot情報
+    bot_info = []
+    bot_info.append(f"**Name**: {bot.user.name}#{bot.user.discriminator}")
+    bot_info.append(f"**ID**: `{bot.user.id}`")
+    bot_info.append(f"**Servers**: {len(bot.guilds)}")
+    bot_info.append(f"**Uptime**: {uptime.days}d {uptime.seconds//3600}h {(uptime.seconds//60)%60}m")
+    
+    embed.add_field(
+        name="🤖 Bot Information",
+        value="\n".join(bot_info),
+        inline=False
+    )
+    
+    # 👤 ユーザー情報
+    user_info = []
+    user_info.append(f"**User**: {interaction.user.name}")
+    user_info.append(f"**ID**: `{user_id}`")
+    
+    # 会話モード状態
+    talk_mode = "🟢 ON" if user_id in talk_mode_users and talk_mode_users[user_id] else "🔴 OFF"
+    user_info.append(f"**Talk Mode**: {talk_mode}")
+    
+    # 会話履歴
+    if user_id in user_conversations:
+        conv_count = len(user_conversations[user_id])
+        user_info.append(f"**Conversations**: {conv_count}/50")
+        
+        if conv_count > 0:
+            import statistics
+            avg_quality = statistics.mean(c['quality'] for c in user_conversations[user_id])
+            user_info.append(f"**Avg Quality**: {avg_quality:.1%}")
+    else:
+        user_info.append(f"**Conversations**: 0/50")
+    
+    embed.add_field(
+        name="👤 Your Information",
+        value="\n".join(user_info),
+        inline=False
+    )
+    
+    # 📊 セッション統計
+    session_info = []
+    session_info.append(f"**Total Queries**: {session_data['total_queries']}")
+    session_info.append(f"**Successful**: {session_data['successful_queries']}")
+    if session_data['total_queries'] > 0:
+        success_rate = session_data['successful_queries'] / session_data['total_queries']
+        session_info.append(f"**Success Rate**: {success_rate:.1%}")
+    session_info.append(f"**Active Users**: {len(user_conversations)}")
+    
+    embed.add_field(
+        name="📊 Session Statistics",
+        value="\n".join(session_info),
+        inline=True
+    )
+    
+    # 🚀 高度機能の使用状況
+    feature_info = []
+    feature_info.append(f"🔮 Quantum: {session_data['quantum_optimizations']}")
+    feature_info.append(f"🧬 Genetic: {session_data['genetic_evolutions']}")
+    feature_info.append(f"🌊 Swarm: {session_data['swarm_optimizations']}")
+    
+    embed.add_field(
+        name="🚀 Advanced Features",
+        value="\n".join(feature_info),
+        inline=True
+    )
+    
+    # ⚙️ システム設定
+    if llm:
+        config = llm.config
+        config_info = []
+        config_info.append(f"**Model**: {config.model}")
+        config_info.append(f"**Temperature**: {config.temperature}")
+        config_info.append(f"**Max Tokens**: {config.max_tokens}")
+        
+        # 有効な機能カウント
+        enabled_features = []
+        if config.quantum.enabled: enabled_features.append("Quantum")
+        if config.genetic.enabled: enabled_features.append("Genetic")
+        if config.swarm.enabled: enabled_features.append("Swarm")
+        if config.rlhf.enabled: enabled_features.append("RLHF")
+        if config.adversarial_testing: enabled_features.append("Adversarial")
+        if config.causal_reasoning: enabled_features.append("Causal")
+        if config.creative_synthesis: enabled_features.append("Creative")
+        if config.verification_system: enabled_features.append("Verification")
+        
+        config_info.append(f"**Active Modules**: {len(enabled_features)}/8")
+        
+        embed.add_field(
+            name="⚙️ System Configuration",
+            value="\n".join(config_info),
+            inline=False
+        )
+    
+    # 🧠 LLMシステム状態
+    if llm:
+        llm_info = []
+        
+        # Knowledge Graph
+        if llm.knowledge_graph:
+            kg = llm.knowledge_graph
+            llm_info.append(f"**KG Nodes**: {len(kg.nodes)}")
+            llm_info.append(f"**KG Edges**: {len(kg.edges)}")
+        
+        # Vector DB
+        if llm.vec_db:
+            llm_info.append(f"**Cached Entries**: {len(llm.vec_db.entries)}")
+        
+        # Context Window
+        if llm.context_window:
+            llm_info.append(f"**Context Size**: {len(llm.context_window.messages)}")
+        
+        if llm_info:
+            embed.add_field(
+                name="🧠 LLM State",
+                value="\n".join(llm_info),
+                inline=True
+            )
+    
+    # 📈 パフォーマンスメトリクス
+    if llm and llm.metrics:
+        perf_info = []
+        if 'strategy_performance' in llm.metrics:
+            best_strategy = max(llm.metrics['strategy_performance'].items(), 
+                              key=lambda x: x[1], default=None)
+            if best_strategy:
+                perf_info.append(f"**Best Strategy**: {best_strategy[0]}")
+        
+        if 'total_tokens' in llm.metrics:
+            perf_info.append(f"**Total Tokens**: {llm.metrics['total_tokens']:,}")
+        
+        if 'total_cost' in llm.metrics:
+            perf_info.append(f"**Total Cost**: ${llm.metrics['total_cost']:.4f}")
+        
+        if perf_info:
+            embed.add_field(
+                name="📈 Performance",
+                value="\n".join(perf_info),
+                inline=True
+            )
+    
+    # 🎯 利用可能なコマンド数
+    commands = await tree.fetch_commands()
+    embed.add_field(
+        name="🎮 Available Commands",
+        value=f"**Total**: {len(commands)} commands\n"
+              f"Use `/help` to see all commands",
+        inline=False
+    )
+    
+    # 💡 クイックアクション
+    quick_actions = []
+    quick_actions.append("`/talk mode:on` - 会話モード開始")
+    quick_actions.append("`/clear` - 会話履歴クリア")
+    quick_actions.append("`/config` - 詳細設定表示")
+    quick_actions.append("`/session` - セッション情報")
+    
+    embed.add_field(
+        name="💡 Quick Actions",
+        value="\n".join(quick_actions),
+        inline=False
+    )
+    
+    # フッター
+    embed.set_footer(
+        text=f"Requested by {interaction.user.name}",
+        icon_url=interaction.user.display_avatar.url if interaction.user.display_avatar else None
+    )
+    
+    await interaction.followup.send(embed=embed)
 
 
 # ==================== メイン実行 ====================
