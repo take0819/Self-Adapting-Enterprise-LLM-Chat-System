@@ -1700,23 +1700,41 @@ async def info_command(interaction: discord.Interaction):
         
         # Knowledge Graph
         if hasattr(llm, 'knowledge_graph') and llm.knowledge_graph:
-            kg = llm.knowledge_graph
-            llm_info.append(f"**KG Nodes**: {len(kg.nodes)}")
-            llm_info.append(f"**KG Edges**: {len(kg.edges)}")
+            try:
+                kg = llm.knowledge_graph
+                llm_info.append(f"**KG Nodes**: {len(kg.nodes)}")
+                llm_info.append(f"**KG Edges**: {len(kg.edges)}")
+            except Exception as e:
+                print(f"Knowledge Graph info error: {e}")
         
-        # Vector DB
+        # Vector DB - 安全にアクセス
         if hasattr(llm, 'vector_db') and llm.vector_db:
-            llm_info.append(f"**Vector Entries**: {len(llm.vector_db.entries)}")
+            try:
+                # VectorDBの実装に応じて適切な属性にアクセス
+                if hasattr(llm.vector_db, 'vectors') and isinstance(llm.vector_db.vectors, dict):
+                    llm_info.append(f"**Vector Entries**: {len(llm.vector_db.vectors)}")
+                elif hasattr(llm.vector_db, 'embeddings') and isinstance(llm.vector_db.embeddings, dict):
+                    llm_info.append(f"**Vector Entries**: {len(llm.vector_db.embeddings)}")
+                elif hasattr(llm.vector_db, '__len__'):
+                    llm_info.append(f"**Vector Entries**: {len(llm.vector_db)}")
+            except Exception as e:
+                print(f"Vector DB info error: {e}")
         
         # Context Window
         if hasattr(llm, 'context_window') and llm.context_window:
-            llm_info.append(f"**Context Size**: {len(llm.context_window.messages)}")
+            try:
+                llm_info.append(f"**Context Size**: {len(llm.context_window.messages)}")
+            except Exception as e:
+                print(f"Context Window info error: {e}")
         
         # Metrics
         if hasattr(llm, 'metrics') and llm.metrics:
-            total_interactions = llm.metrics.get('total_queries', 0)
-            if total_interactions > 0:
-                llm_info.append(f"**Total Interactions**: {total_interactions}")
+            try:
+                total_interactions = llm.metrics.get('total_queries', 0)
+                if total_interactions > 0:
+                    llm_info.append(f"**Total Interactions**: {total_interactions}")
+            except Exception as e:
+                print(f"Metrics info error: {e}")
         
         if llm_info:
             embed.add_field(
