@@ -405,7 +405,7 @@ async def handle_query(message: discord.Message, query: str):
             await message.reply(embed=error_embed)
             print(f"Error: {e}")
             traceback.print_exc()
-            
+
 # ==================== スラッシュコマンド ====================
 
 @tree.command(name='swarm', description='群知能ステータスを表示')
@@ -1669,14 +1669,22 @@ async def info_command(interaction: discord.Interaction):
         
         # 有効な機能カウント
         enabled_features = []
-        if config.quantum.enabled: enabled_features.append("Quantum")
-        if config.genetic.enabled: enabled_features.append("Genetic")
-        if config.swarm.enabled: enabled_features.append("Swarm")
-        if config.rlhf.enabled: enabled_features.append("RLHF")
-        if config.adversarial_testing: enabled_features.append("Adversarial")
-        if config.causal_reasoning: enabled_features.append("Causal")
-        if config.creative_synthesis: enabled_features.append("Creative")
-        if config.verification_system: enabled_features.append("Verification")
+        if hasattr(config, 'quantum') and config.quantum.enabled:
+            enabled_features.append("Quantum")
+        if hasattr(config, 'genetic') and config.genetic.enabled:
+            enabled_features.append("Genetic")
+        if hasattr(config, 'swarm') and config.swarm.enabled:
+            enabled_features.append("Swarm")
+        if hasattr(config, 'rlhf') and config.rlhf.enabled:
+            enabled_features.append("RLHF")
+        if hasattr(config, 'adversarial_testing') and config.adversarial_testing:
+            enabled_features.append("Adversarial")
+        if hasattr(config, 'causal_reasoning') and config.causal_reasoning:
+            enabled_features.append("Causal")
+        if hasattr(config, 'creative_synthesis') and config.creative_synthesis:
+            enabled_features.append("Creative")
+        if hasattr(config, 'verification_system') and config.verification_system:
+            enabled_features.append("Verification")
         
         config_info.append(f"**Active Modules**: {len(enabled_features)}/8")
         
@@ -1691,18 +1699,24 @@ async def info_command(interaction: discord.Interaction):
         llm_info = []
         
         # Knowledge Graph
-        if llm.knowledge_graph:
+        if hasattr(llm, 'knowledge_graph') and llm.knowledge_graph:
             kg = llm.knowledge_graph
             llm_info.append(f"**KG Nodes**: {len(kg.nodes)}")
             llm_info.append(f"**KG Edges**: {len(kg.edges)}")
         
         # Vector DB
-        if llm.vec_db:
-            llm_info.append(f"**Cached Entries**: {len(llm.vec_db.entries)}")
+        if hasattr(llm, 'vector_db') and llm.vector_db:
+            llm_info.append(f"**Vector Entries**: {len(llm.vector_db.entries)}")
         
         # Context Window
-        if llm.context_window:
+        if hasattr(llm, 'context_window') and llm.context_window:
             llm_info.append(f"**Context Size**: {len(llm.context_window.messages)}")
+        
+        # Metrics
+        if hasattr(llm, 'metrics') and llm.metrics:
+            total_interactions = llm.metrics.get('total_queries', 0)
+            if total_interactions > 0:
+                llm_info.append(f"**Total Interactions**: {total_interactions}")
         
         if llm_info:
             embed.add_field(
@@ -1712,13 +1726,16 @@ async def info_command(interaction: discord.Interaction):
             )
     
     # 📈 パフォーマンスメトリクス
-    if llm and llm.metrics:
+    if llm and hasattr(llm, 'metrics') and llm.metrics:
         perf_info = []
-        if 'strategy_performance' in llm.metrics:
-            best_strategy = max(llm.metrics['strategy_performance'].items(), 
-                              key=lambda x: x[1], default=None)
-            if best_strategy:
+        
+        if 'strategy_performance' in llm.metrics and llm.metrics['strategy_performance']:
+            try:
+                best_strategy = max(llm.metrics['strategy_performance'].items(), 
+                                  key=lambda x: x[1])
                 perf_info.append(f"**Best Strategy**: {best_strategy[0]}")
+            except:
+                pass
         
         if 'total_tokens' in llm.metrics:
             perf_info.append(f"**Total Tokens**: {llm.metrics['total_tokens']:,}")
@@ -1733,14 +1750,21 @@ async def info_command(interaction: discord.Interaction):
                 inline=True
             )
     
-    # 🎯 利用可能なコマンド数
-    commands = await tree.fetch_commands()
-    embed.add_field(
-        name="🎮 Available Commands",
-        value=f"**Total**: {len(commands)} commands\n"
-              f"Use `/help` to see all commands",
-        inline=False
-    )
+    # 🎮 利用可能なコマンド数
+    try:
+        commands = await tree.fetch_commands()
+        embed.add_field(
+            name="🎮 Available Commands",
+            value=f"**Total**: {len(commands)} commands\n"
+                  f"Use `/about` to see features",
+            inline=False
+        )
+    except:
+        embed.add_field(
+            name="🎮 Available Commands",
+            value=f"Use `/about` to see all features",
+            inline=False
+        )
     
     # 💡 クイックアクション
     quick_actions = []
@@ -1762,7 +1786,6 @@ async def info_command(interaction: discord.Interaction):
     )
     
     await interaction.followup.send(embed=embed)
-
 
 # ==================== メイン実行 ====================
 
