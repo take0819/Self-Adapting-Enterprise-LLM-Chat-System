@@ -2796,7 +2796,7 @@ class QuantumChat:
         if effects:
             print(f"\n🔮 Potential Effects:")
             for i, (effect, prob) in enumerate(effects, 1):
-                bar = "█" * int(prob * 30) + "░" * (30 - int(    def handle_command(self, command: str) -> bool:
+                bar = "█" * int(prob * 30) + "░" * (30 - int(prob * 30))
         """コマンド処理"""
         parts = command.strip().split()
         cmd = parts[0].lower()

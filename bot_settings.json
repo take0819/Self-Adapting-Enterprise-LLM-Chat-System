@@ -1,0 +1,10 @@
+{
+  "model": "llama-3.1-8b-instant",
+  "temperature": 0.7,
+  "features": {
+    "quantum": true,
+    "genetic": true,
+    "swarm": true,
+    "rlhf": true
+  }
+}

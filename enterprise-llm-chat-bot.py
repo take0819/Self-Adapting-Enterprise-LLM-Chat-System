@@ -9,7 +9,7 @@ Discord Bot for Quantum-Enhanced Self-Evolving Enterprise LLM System v3.5γ
 2. export GROQ_API_KEY='your_groq_key'
 3. export DISCORD_BOT_TOKEN='your_discord_token'
 4. 同じディレクトリにenterprise-llm-chat-verα-5.pyを配置
-5. python discord_quantum_bot.py
+5. python enterprise-llm-chat-bot.py
 
 機能:
 🔮 Quantum-Inspired Optimization
