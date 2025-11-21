@@ -31,6 +31,195 @@ from datetime import datetime
 import json
 from typing import Optional, Dict, List
 import traceback
+import pathlib
+import time
+import threading
+
+BASE_DIR = pathlib.Path(__file__).parent
+ADMINS_FILE = BASE_DIR / "admins.json"
+AUDIT_FILE = BASE_DIR / "audit_logs.json"
+USAGE_FILE = BASE_DIR / "usage_limits.json"
+SETTINGS_FILE = BASE_DIR / "bot_settings.json"
+ERROR_LOG_FILE = BASE_DIR / "error_logs.json"
+
+# 初期データ構造
+def _ensure_file(path, default):
+    try:
+        if not path.exists():
+            path.write_text(json.dumps(default, ensure_ascii=False, indent=2), encoding='utf-8')
+    except Exception as e:
+        print(f"File create error {path}: {e}")
+
+_ensure_file(ADMINS_FILE, {"admins": []})
+_ensure_file(AUDIT_FILE, {"events": []})
+_ensure_file(USAGE_FILE, {"limits": {}})  # usage_limits: { user_id: { "daily_limit": N, "used": M, "last_reset": "YYYY-MM-DD" } }
+_ensure_file(SETTINGS_FILE, {
+    "model": "llama-3.1-8b-instant",
+    "temperature": 0.7,
+    "features": {
+        "quantum": True, "genetic": True, "swarm": True, "rlhf": True
+    }
+})
+
+# --- 管理DBユーティリティ ---
+def load_json(path):
+    try:
+        return json.loads(path.read_text(encoding='utf-8'))
+    except Exception:
+        return {}
+
+def save_json(path, obj):
+    try:
+        path.write_text(json.dumps(obj, ensure_ascii=False, indent=2), encoding='utf-8')
+    except Exception as e:
+        print(f"Failed to save {path}: {e}")
+
+def is_bot_admin(member: discord.Member):
+    """Discordの管理者権限または独自AdminDBに登録されていればTrue"""
+    if member.guild_permissions and member.guild_permissions.administrator:
+        return True
+    data = load_json(ADMINS_FILE)
+    admins = data.get("admins", [])
+    return str(member.id) in [str(a) for a in admins]
+
+def add_admin(user_id: int):
+    data = load_json(ADMINS_FILE)
+    admins = set(str(x) for x in data.get("admins", []))
+    admins.add(str(user_id))
+    data["admins"] = sorted(admins)
+    save_json(ADMINS_FILE, data)
+    audit_event("admin.add", {"user_id": str(user_id)})
+
+def remove_admin(user_id: int):
+    data = load_json(ADMINS_FILE)
+    admins = set(str(x) for x in data.get("admins", []))
+    if str(user_id) in admins:
+        admins.remove(str(user_id))
+    data["admins"] = sorted(admins)
+    save_json(ADMINS_FILE, data)
+    audit_event("admin.remove", {"user_id": str(user_id)})
+
+def list_admins():
+    data = load_json(ADMINS_FILE)
+    return data.get("admins", [])
+
+# --- 監査ログ ---
+def audit_event(event_type: str, meta: dict):
+    try:
+        logs = load_json(AUDIT_FILE)
+        ev = {
+            "time": datetime.utcnow().isoformat() + "Z",
+            "type": event_type,
+            "meta": meta
+        }
+        logs.setdefault("events", []).append(ev)
+        # 保持上限（例: 1000件）
+        if len(logs["events"]) > 2000:
+            logs["events"] = logs["events"][-2000:]
+        save_json(AUDIT_FILE, logs)
+    except Exception as e:
+        print(f"Audit log error: {e}")
+
+# --- 使用量制限ユーティリティ ---
+def get_today_str():
+    return datetime.utcnow().strftime("%Y-%m-%d")
+
+def ensure_usage_entry(user_id: int):
+    data = load_json(USAGE_FILE)
+    limits = data.setdefault("limits", {})
+    entry = limits.get(str(user_id))
+    if not entry:
+        entry = {"daily_limit": 0, "used": 0, "last_reset": get_today_str()}
+        limits[str(user_id)] = entry
+        save_json(USAGE_FILE, data)
+    else:
+        # 日付がずれていたら自動リセット
+        if entry.get("last_reset") != get_today_str():
+            entry["used"] = 0
+            entry["last_reset"] = get_today_str()
+            save_json(USAGE_FILE, data)
+    return entry
+
+def increment_usage(user_id: int):
+    data = load_json(USAGE_FILE)
+    limits = data.setdefault("limits", {})
+    entry = limits.get(str(user_id))
+    if not entry:
+        entry = {"daily_limit": 0, "used": 0, "last_reset": get_today_str()}
+        limits[str(user_id)] = entry
+    # reset if day changed
+    if entry.get("last_reset") != get_today_str():
+        entry["used"] = 0
+        entry["last_reset"] = get_today_str()
+    entry["used"] = entry.get("used", 0) + 1
+    save_json(USAGE_FILE, data)
+    audit_event("usage.increment", {"user_id": str(user_id), "used": entry["used"]})
+    return entry
+
+def set_user_limit(user_id: int, limit: int):
+    data = load_json(USAGE_FILE)
+    limits = data.setdefault("limits", {})
+    entry = limits.get(str(user_id), {"daily_limit": 0, "used": 0, "last_reset": get_today_str()})
+    entry["daily_limit"] = limit
+    limits[str(user_id)] = entry
+    save_json(USAGE_FILE, data)
+    audit_event("usage.set_limit", {"user_id": str(user_id), "limit": limit})
+
+def reset_all_usage():
+    data = load_json(USAGE_FILE)
+    limits = data.setdefault("limits", {})
+    for k, v in limits.items():
+        v["used"] = 0
+        v["last_reset"] = get_today_str()
+    save_json(USAGE_FILE, data)
+    audit_event("usage.reset_all", {})
+
+# --- 設定操作 ---
+def get_bot_settings():
+    return load_json(SETTINGS_FILE)
+
+def set_bot_setting(key_path: List[str], value):
+    data = load_json(SETTINGS_FILE)
+    cur = data
+    for p in key_path[:-1]:
+        cur = cur.setdefault(p, {})
+    cur[key_path[-1]] = value
+    save_json(SETTINGS_FILE, data)
+    audit_event("settings.update", {"path": key_path, "value": value})
+
+# --- エラーログ保存 ---
+def log_error(err_msg: str, ctx: dict = None):
+    try:
+        data = load_json(ERROR_LOG_FILE)
+        entries = data.setdefault("errors", [])
+        entries.append({
+            "time": datetime.utcnow().isoformat() + "Z",
+            "error": err_msg,
+            "ctx": ctx or {}
+        })
+        if len(entries) > 2000:
+            data["errors"] = entries[-2000:]
+        save_json(ERROR_LOG_FILE, data)
+        audit_event("error.logged", {"error": err_msg})
+    except Exception as e:
+        print(f"error logging failed: {e}")
+
+# 日次リセットスレッド（UTC 0:00 に実行）
+def _daily_reset_worker():
+    while True:
+        now = datetime.utcnow()
+        next_midnight = datetime(now.year, now.month, now.day) + timedelta(days=1)
+        wait_seconds = (next_midnight - now).total_seconds()
+        time.sleep(wait_seconds + 1)
+        try:
+            reset_all_usage()
+            print("🔁 Daily usage reset performed")
+        except Exception as e:
+            print(f"Daily reset failed: {e}")
+
+# 起動時にスレッドを立てる（on_ready 内でも可）
+daily_reset_thread = threading.Thread(target=_daily_reset_worker, daemon=True)
+daily_reset_thread.start()
 
 # 元のQuantum LLMシステムをインポート
 try:
@@ -342,22 +531,31 @@ async def on_message(message: discord.Message):
         
         await handle_query(message, query)
 
-
 async def handle_query(message: discord.Message, query: str):
-    """クエリ処理"""
+    """クエリ処理（利用制限チェック付き）"""
     if not llm:
         await message.channel.send('❌ システムが初期化されていません')
         return
-    
+
     user_id = message.author.id
-    
+
+    # 使用量制限を確認
+    entry = ensure_usage_entry(user_id)
+    daily_limit = entry.get("daily_limit", 0)
+    used = entry.get("used", 0)
+    if daily_limit > 0 and used >= daily_limit:
+        await message.channel.send(f'⚠️ 1日の利用上限に達しました（{daily_limit} 回）。管理者に問い合わせてください。')
+        return
+
     # タイピングインジケーター
     async with message.channel.typing():
         try:
-            # クエリ実行
             response = await llm.query_async(query)
-            
-            # セッションデータ更新
+
+            # 使用量をカウント
+            increment_usage(user_id)
+
+            # セッションデータ更新（既存処理を維持）
             session_data['total_queries'] += 1
             if response.success:
                 session_data['successful_queries'] += 1
@@ -367,11 +565,11 @@ async def handle_query(message: discord.Message, query: str):
                 session_data['genetic_evolutions'] += 1
             if response.swarm_consensus > 0:
                 session_data['swarm_optimizations'] += 1
-            
+
             # ユーザー履歴に追加
             if user_id not in user_conversations:
                 user_conversations[user_id] = []
-            
+
             user_conversations[user_id].append({
                 'query': query[:200],
                 'response': response.text[:200],
@@ -379,24 +577,29 @@ async def handle_query(message: discord.Message, query: str):
                 'strategy': response.strategy.value if response.strategy else None,
                 'timestamp': datetime.now().isoformat()
             })
-            
-            # 最新50件のみ保持
+
             if len(user_conversations[user_id]) > 50:
                 user_conversations[user_id] = user_conversations[user_id][-50:]
-            
-            # Embed作成
+
             embed = format_response_embed(response, query, message.author)
-            
             await message.reply(embed=embed)
-            
-            # 長い応答は分割送信
+
             if len(response.text) > 4000:
                 remaining = response.text[4000:]
                 chunks = [remaining[i:i+1900] for i in range(0, len(remaining), 1900)]
                 for chunk in chunks:
                     await message.channel.send(f"```\n{chunk}\n```")
-            
+
+            # 監査ログに保存（簡易）
+            audit_event("query.executed", {
+                "user_id": str(user_id),
+                "channel_id": str(message.channel.id),
+                "quality": response.quality_score,
+                "strategy": response.strategy.value if response.strategy else None
+            })
+
         except Exception as e:
+            log_error(str(e), {"user_id": str(user_id), "query": query[:200]})
             error_embed = discord.Embed(
                 title="❌ Error",
                 description=f"処理中にエラーが発生しました: {str(e)}",
@@ -455,8 +658,150 @@ async def swarm_command(interaction: discord.Interaction):
     
     await interaction.followup.send(embed=embed)
 
+# --- /admin add/remove/list
+@tree.command(name='admin', description='管理者を追加/削除/表示 (管理者のみ)')
+@app_commands.describe(action='add/remove/list', target='対象ユーザー（メンションまたはID）')
+async def admin_command(interaction: discord.Interaction, action: str, target: Optional[str] = None):
+    await interaction.response.defer(ephemeral=True)
+    if not is_bot_admin(interaction.user):
+        await interaction.followup.send('❌ このコマンドは管理者のみ使用できます', ephemeral=True)
+        return
+    try:
+        if action == 'add' and target:
+            # メンションならidを取り出す
+            target_id = int(target.strip('<@!>')) if target.startswith('<@') else int(target)
+            add_admin(target_id)
+            await interaction.followup.send(f'✅ <@{target_id}> を管理者リストに追加しました', ephemeral=True)
+        elif action == 'remove' and target:
+            target_id = int(target.strip('<@!>')) if target.startswith('<@') else int(target)
+            remove_admin(target_id)
+            await interaction.followup.send(f'✅ <@{target_id}> を管理者リストから削除しました', ephemeral=True)
+        elif action == 'list':
+            admins = list_admins()
+            if not admins:
+                await interaction.followup.send('管理者リストは空です', ephemeral=True)
+            else:
+                mentions = ", ".join([f"<@{aid}>" for aid in admins])
+                await interaction.followup.send(f'管理者: {mentions}', ephemeral=True)
+        else:
+            await interaction.followup.send('使い方: /admin add|remove|list <user>', ephemeral=True)
+    except Exception as e:
+        log_error(str(e), {"cmd": "admin", "action": action, "target": target})
+        await interaction.followup.send(f'❌ エラー: {e}', ephemeral=True)
 
-# ==================== 追加のユーティリティコマンド ====================
+# --- /logs recent|user|errors|stats
+@tree.command(name='logs', description='監査ログを表示 (管理者のみ)')
+@app_commands.describe(kind='recent/user/errors/stats', target='user id or mention (for user)')
+async def logs_command(interaction: discord.Interaction, kind: str, target: Optional[str] = None):
+    await interaction.response.defer(ephemeral=True)
+    if not is_bot_admin(interaction.user):
+        await interaction.followup.send('❌ このコマンドは管理者のみ使用できます', ephemeral=True)
+        return
+    try:
+        logs = load_json(AUDIT_FILE).get("events", [])
+        if kind == 'recent':
+            recent = logs[-20:]
+            text = "\n".join([f"{l['time']} {l['type']} {l.get('meta')}" for l in recent]) or "No events"
+            await interaction.followup.send(f"```{text}```", ephemeral=True)
+        elif kind == 'user' and target:
+            uid = str(int(target.strip('<@!>')) if target.startswith('<@') else int(target))
+            filtered = [l for l in logs if l.get('meta', {}).get('user_id') == uid]
+            text = "\n".join([f"{l['time']} {l['type']} {l.get('meta')}" for l in filtered[-50:]]) or "No events for user"
+            await interaction.followup.send(f"```{text}```", ephemeral=True)
+        elif kind == 'errors':
+            errs = load_json(ERROR_LOG_FILE).get("errors", [])[-50:]
+            text = "\n".join([f"{e['time']} {e['error']}" for e in errs]) or "No errors"
+            await interaction.followup.send(f"```{text}```", ephemeral=True)
+        elif kind == 'stats':
+            # 簡易統計
+            total = len(logs)
+            types = {}
+            for l in logs:
+                types[l['type']] = types.get(l['type'], 0) + 1
+            types_str = "\n".join([f"{k}: {v}" for k, v in types.items()])
+            await interaction.followup.send(f"Total events: {total}\n{types_str}", ephemeral=True)
+        else:
+            await interaction.followup.send('使い方: /logs recent|user|errors|stats [target]', ephemeral=True)
+    except Exception as e:
+        log_error(str(e), {"cmd": "logs", "kind": kind, "target": target})
+        await interaction.followup.send(f'❌ エラー: {e}', ephemeral=True)
+
+# --- /settings model|temperature|feature
+@tree.command(name='settings', description='Bot設定の確認/変更 (管理者のみ)')
+@app_commands.describe(action='get/set', key='model|temperature|feature', value='新しい値（featureなら on/off）')
+async def settings_command(interaction: discord.Interaction, action: str, key: Optional[str] = None, value: Optional[str] = None):
+    await interaction.response.defer(ephemeral=True)
+    if not is_bot_admin(interaction.user):
+        await interaction.followup.send('❌ このコマンドは管理者のみ使用できます', ephemeral=True)
+        return
+    try:
+        settings = get_bot_settings()
+        if action == 'get':
+            await interaction.followup.send(f"```{json.dumps(settings, ensure_ascii=False, indent=2)}```", ephemeral=True)
+            return
+        if action == 'set' and key:
+            if key == 'model':
+                set_bot_setting(['model'], value)
+                if llm and hasattr(llm, 'config'):
+                    llm.config.model = value
+                await interaction.followup.send(f"✅ model を {value} に設定しました", ephemeral=True)
+            elif key == 'temperature':
+                val = float(value)
+                set_bot_setting(['temperature'], val)
+                if llm and hasattr(llm, 'config'):
+                    llm.config.temperature = val
+                await interaction.followup.send(f"✅ temperature を {val} に設定しました", ephemeral=True)
+            elif key.startswith('feature.'):  # e.g. feature.quantum
+                parts = key.split('.', 1)
+                feature = parts[1]
+                onoff = value.lower() in ('on', 'true', '1')
+                set_bot_setting(['features', feature], onoff)
+                # try to toggle on runtime if possible
+                if llm and hasattr(llm, feature):
+                    try:
+                        setattr(llm, feature, onoff)
+                    except Exception:
+                        pass
+                await interaction.followup.send(f"✅ feature {feature} を {'ON' if onoff else 'OFF'} にしました", ephemeral=True)
+            else:
+                await interaction.followup.send("未知のキーです。model|temperature|feature.<name>", ephemeral=True)
+        else:
+            await interaction.followup.send("使い方: /settings get  または /settings set <key> <value>", ephemeral=True)
+    except Exception as e:
+        log_error(str(e), {"cmd": "settings", "action": action, "key": key, "value": value})
+        await interaction.followup.send(f'❌ エラー: {e}', ephemeral=True)
+
+# --- /limit user <user> <count> | clear | stats
+@tree.command(name='limit', description='利用制限の設定/確認 (管理者のみ)')
+@app_commands.describe(action='user|clear|stats', target='user mention or id', count='数')
+async def limit_command(interaction: discord.Interaction, action: str, target: Optional[str] = None, count: Optional[int] = None):
+    await interaction.response.defer(ephemeral=True)
+    if not is_bot_admin(interaction.user):
+        await interaction.followup.send('❌ このコマンドは管理者のみ使用できます', ephemeral=True)
+        return
+    try:
+        if action == 'user' and target and count is not None:
+            uid = int(target.strip('<@!>')) if target.startswith('<@') else int(target)
+            set_user_limit(uid, int(count))
+            await interaction.followup.send(f'✅ <@{uid}> の1日上限を {count} 回に設定しました', ephemeral=True)
+        elif action == 'clear':
+            # 全ユーザーの制限をクリア（上限0=無制限）
+            data = load_json(USAGE_FILE)
+            data["limits"] = {}
+            save_json(USAGE_FILE, data)
+            audit_event("usage.clear_all", {"by": str(interaction.user.id)})
+            await interaction.followup.send('✅ 全ユーザーの利用制限をクリアしました', ephemeral=True)
+        elif action == 'stats':
+            data = load_json(USAGE_FILE).get("limits", {})
+            lines = []
+            for uid, v in list(data.items())[:50]:
+                lines.append(f"<@{uid}> limit={v.get('daily_limit',0)} used={v.get('used',0)} last_reset={v.get('last_reset')}")
+            await interaction.followup.send("```" + ("\n".join(lines) or "No limits set") + "```", ephemeral=True)
+        else:
+            await interaction.followup.send('使い方: /limit user <user> <count> | /limit clear | /limit stats', ephemeral=True)
+    except Exception as e:
+        log_error(str(e), {"cmd": "limit", "action": action})
+        await interaction.followup.send(f'❌ エラー: {e}', ephemeral=True)
 
 @tree.command(name='clear', description='会話履歴をクリア')
 async def clear_command(interaction: discord.Interaction):
