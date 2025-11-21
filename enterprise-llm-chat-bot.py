@@ -42,6 +42,60 @@ USAGE_FILE = BASE_DIR / "usage_limits.json"
 SETTINGS_FILE = BASE_DIR / "bot_settings.json"
 ERROR_LOG_FILE = BASE_DIR / "error_logs.json"
 
+# 元のQuantum LLMシステムをインポート
+try:
+    sys.path.insert(0, os.path.dirname(__file__))
+    # ファイル名のハイフンをアンダースコアに変換してインポート
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "quantum_llm",
+        "enterprise-llm-chat-verα-5.py"
+    )
+    quantum_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(quantum_module)
+    
+    QuantumLLM = quantum_module.QuantumLLM
+    SystemConfig = quantum_module.SystemConfig
+    QuantumConfig = quantum_module.QuantumConfig
+    GeneticConfig = quantum_module.GeneticConfig
+    SwarmConfig = quantum_module.SwarmConfig
+    RLHFConfig = quantum_module.RLHFConfig
+    Intent = quantum_module.Intent
+    Complexity = quantum_module.Complexity
+    Strategy = quantum_module.Strategy
+    
+except Exception as e:
+    print(f"❌ Cannot import Quantum LLM module: {e}")
+    print("Make sure enterprise-llm-chat-verα-5.py is in the same directory")
+    sys.exit(1)
+
+# Discord Bot設定
+intents = discord.Intents.default()
+intents.message_content = True
+intents.members = True
+
+bot = discord.Client(intents=intents)
+tree = app_commands.CommandTree(bot)
+
+# グローバルLLMインスタンス
+llm: Optional[QuantumLLM] = None
+
+# ユーザーごとの会話履歴
+user_conversations: Dict[int, list] = {}
+
+# セッション管理
+session_data = {
+    'start_time': datetime.now(),
+    'total_queries': 0,
+    'successful_queries': 0,
+    'quantum_optimizations': 0,
+    'genetic_evolutions': 0,
+    'swarm_optimizations': 0
+}
+
+# 会話モード管理
+talk_mode_users: Dict[int, bool] = {}  # 追加
+
 # 初期データ構造
 def _ensure_file(path, default):
     try:
@@ -220,61 +274,6 @@ def _daily_reset_worker():
 # 起動時にスレッドを立てる（on_ready 内でも可）
 daily_reset_thread = threading.Thread(target=_daily_reset_worker, daemon=True)
 daily_reset_thread.start()
-
-# 元のQuantum LLMシステムをインポート
-try:
-    sys.path.insert(0, os.path.dirname(__file__))
-    # ファイル名のハイフンをアンダースコアに変換してインポート
-    import importlib.util
-    spec = importlib.util.spec_from_file_location(
-        "quantum_llm",
-        "enterprise-llm-chat-verα-5.py"
-    )
-    quantum_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(quantum_module)
-    
-    QuantumLLM = quantum_module.QuantumLLM
-    SystemConfig = quantum_module.SystemConfig
-    QuantumConfig = quantum_module.QuantumConfig
-    GeneticConfig = quantum_module.GeneticConfig
-    SwarmConfig = quantum_module.SwarmConfig
-    RLHFConfig = quantum_module.RLHFConfig
-    Intent = quantum_module.Intent
-    Complexity = quantum_module.Complexity
-    Strategy = quantum_module.Strategy
-    
-except Exception as e:
-    print(f"❌ Cannot import Quantum LLM module: {e}")
-    print("Make sure enterprise-llm-chat-verα-5.py is in the same directory")
-    sys.exit(1)
-
-# Discord Bot設定
-intents = discord.Intents.default()
-intents.message_content = True
-intents.members = True
-
-bot = discord.Client(intents=intents)
-tree = app_commands.CommandTree(bot)
-
-# グローバルLLMインスタンス
-llm: Optional[QuantumLLM] = None
-
-# ユーザーごとの会話履歴
-user_conversations: Dict[int, list] = {}
-
-# セッション管理
-session_data = {
-    'start_time': datetime.now(),
-    'total_queries': 0,
-    'successful_queries': 0,
-    'quantum_optimizations': 0,
-    'genetic_evolutions': 0,
-    'swarm_optimizations': 0
-}
-
-# 会話モード管理
-talk_mode_users: Dict[int, bool] = {}  # 追加
-
 
 # ==================== ユーティリティ ====================
 
