@@ -48,7 +48,6 @@ from datetime import datetime, timedelta
 from enum import Enum
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 from functools import lru_cache
-
 import numpy as np
 
 try:
@@ -56,7 +55,6 @@ try:
 except ImportError:
     print("❌ Required: pip install groq numpy scipy")
     sys.exit(1)
-
 try:
     import readline
 except ImportError:
@@ -78,7 +76,6 @@ class Intent(str, Enum):
     DEBUGGING = "debugging"
     OPTIMIZATION = "optimization"
 
-
 class Complexity(str, Enum):
     TRIVIAL = "trivial"
     SIMPLE = "simple"
@@ -87,7 +84,6 @@ class Complexity(str, Enum):
     EXPERT = "expert"
     RESEARCH = "research"
     FRONTIER = "frontier"
-
 
 class Strategy(str, Enum):
     DIRECT = "direct"
@@ -102,7 +98,6 @@ class Strategy(str, Enum):
     GENETIC = "genetic_evolution"
     QUANTUM = "quantum_inspired"
 
-
 class PersonaType(str, Enum):
     OPTIMIST = "optimist"
     PESSIMIST = "pessimist"
@@ -110,7 +105,6 @@ class PersonaType(str, Enum):
     INNOVATOR = "innovator"
     CRITIC = "critic"
     SYNTHESIZER = "synthesizer"
-
 
 class ReasoningType(str, Enum):
     DEDUCTIVE = "deductive"
@@ -123,7 +117,6 @@ class ReasoningType(str, Enum):
     DIALECTICAL = "dialectical"
     SYSTEMS_THINKING = "systems_thinking"
 
-
 class VerificationMethod(str, Enum):
     CROSS_REFERENCE = "cross_reference"
     LOGICAL_CONSISTENCY = "logical_consistency"
@@ -131,7 +124,6 @@ class VerificationMethod(str, Enum):
     PEER_REVIEW = "peer_review"
     ADVERSARIAL_TEST = "adversarial_test"
     BLOCKCHAIN_VERIFY = "blockchain_verify"
-
 
 # ==================== データ構造 ====================
 
@@ -146,7 +138,6 @@ class CausalNode:
     confidence: float = 0.5
     evidence: List[str] = field(default_factory=list)
 
-
 @dataclass
 class AdversarialTest:
     """敵対的テスト"""
@@ -158,7 +149,6 @@ class AdversarialTest:
     consistency_score: float
     vulnerability_detected: bool
     timestamp: datetime = field(default_factory=datetime.now)
-
 
 @dataclass
 class VerificationRecord:
@@ -172,7 +162,6 @@ class VerificationRecord:
     verified_by: str = "system"
     timestamp: datetime = field(default_factory=datetime.now)
 
-
 @dataclass
 class CreativeSynthesis:
     """創造的統合"""
@@ -184,7 +173,6 @@ class CreativeSynthesis:
     coherence_score: float
     usefulness_score: float
 
-
 @dataclass
 class PredictiveModel:
     """予測モデル"""
@@ -192,7 +180,6 @@ class PredictiveModel:
     query_embeddings: List[np.ndarray] = field(default_factory=list)
     predicted_intents: List[Intent] = field(default_factory=list)
     prediction_accuracy: float = 0.5
-
 
 # ==================== 設定 ====================
 
@@ -204,7 +191,6 @@ class QuantumConfig:
     iterations: int = 10
     optimization_depth: int = 3
 
-
 @dataclass
 class GeneticConfig:
     """遺伝的アルゴリズム設定"""
@@ -214,7 +200,6 @@ class GeneticConfig:
     crossover_rate: float = 0.7
     elite_ratio: float = 0.2
     generations: int = 5
-
 
 @dataclass
 class SwarmConfig:
@@ -226,7 +211,6 @@ class SwarmConfig:
     social_weight: float = 1.5
     max_iterations: int = 10
 
-
 @dataclass
 class RLHFConfig:
     """RLHF設定"""
@@ -236,7 +220,6 @@ class RLHFConfig:
     exploration_rate: float = 0.1
     reward_shaping: bool = True
 
-
 @dataclass
 class SystemConfig:
     """システム設定"""
@@ -244,18 +227,15 @@ class SystemConfig:
     model: str = "llama-3.1-8b-instant"
     max_tokens: int = 4000
     temperature: float = 0.7
-    
     # キャッシュ・DB
     vec_db: bool = True
     vec_dim: int = 384
     cache_ttl: int = 3600
     similarity_threshold: float = 0.92
-    
     # リトライ
     max_retries: int = 3
     retry_delay: float = 1.0
     max_query_length: int = 15000
-    
     # コア機能
     adaptive: bool = True
     multi_armed_bandit: bool = True
@@ -286,7 +266,6 @@ class SystemConfig:
     real_time_learning: bool = True
     meta_learning: bool = True
 
-
 # ==================== データ構造 ====================
 
 @dataclass
@@ -305,7 +284,6 @@ class Response:
     cached: bool = False
     similarity: float = 0
     rating: Optional[int] = None
-    
     # メタデータ
     intent: Optional[Intent] = None
     complexity: Optional[Complexity] = None
@@ -316,7 +294,6 @@ class Response:
     reflection: Optional[str] = None
     uncertainty: float = 0
     alternatives: List[Dict] = field(default_factory=list)
-    
     # 品質メトリクス
     coherence_score: float = 0
     relevance_score: float = 0
@@ -358,7 +335,6 @@ class Response:
             'latency': self.latency
         }
 
-
 @dataclass
 class Prompt:
     """プロンプト"""
@@ -382,7 +358,6 @@ class Prompt:
         """遺伝的変異"""
         if np.random.random() > mutation_rate:
             return self.template
-        
         mutations = [
             lambda t: t.replace("Explain", "Elaborate on"),
             lambda t: t.replace("provide", "deliver"),
@@ -395,7 +370,6 @@ class Prompt:
             lambda t: f"{t} Show your reasoning.",
             lambda t: t.replace("describe", "analyze in depth")
         ]
-        
         mutated = np.random.choice(mutations)(self.template)
         self.mutations += 1
         return mutated
@@ -405,13 +379,10 @@ class Prompt:
         """交叉"""
         words1 = parent1.template.split()
         words2 = parent2.template.split()
-        
         # 単一点交叉
         point = np.random.randint(1, min(len(words1), len(words2)))
         child_words = words1[:point] + words2[point:]
-        
         return ' '.join(child_words)
-
 
 @dataclass
 class Agent:
@@ -432,10 +403,8 @@ class Agent:
     ):
         """速度更新（PSO）"""
         r1, r2 = np.random.random(2)
-        
         cognitive = c1 * r1 * (self.best_position - self.position)
         social = c2 * r2 * (global_best_position - self.position)
-        
         self.velocity = w * self.velocity + cognitive + social
     
     def update_position(self):
@@ -443,7 +412,6 @@ class Agent:
         self.position = self.position + self.velocity
         # 範囲制限
         self.position = np.clip(self.position, 0, 1)
-
 
 @dataclass
 class Hypothesis:
@@ -457,7 +425,6 @@ class Hypothesis:
     result: Optional[bool] = None
     bayesian_prior: float = 0.5
     bayesian_posterior: float = 0.5
-
 
 @dataclass
 class KnowledgeNode:
@@ -473,7 +440,6 @@ class KnowledgeNode:
     access_count: int = 0
     relevance_score: float = 0.5
 
-
 @dataclass
 class KnowledgeEdge:
     """知識グラフエッジ"""
@@ -485,7 +451,6 @@ class KnowledgeEdge:
     properties: Dict[str, Any] = field(default_factory=dict)
     created: datetime = field(default_factory=datetime.now)
 
-
 # ==================== ユーティリティ ====================
 
 class Logger:
@@ -493,7 +458,6 @@ class Logger:
     def __init__(self, name: str, level: str = "INFO"):
         self.logger = logging.getLogger(name)
         self.logger.setLevel(getattr(logging, level))
-        
         if not self.logger.handlers:
             handler = logging.StreamHandler(sys.stdout)
             formatter = logging.Formatter(
@@ -514,9 +478,7 @@ class Logger:
     
     def debug(self, msg: str):
         self.logger.debug(msg)
-
 logger = Logger('quantum-llm')
-
 
 class VectorDB:
     """ベクトルDB"""
@@ -532,20 +494,16 @@ class VectorDB:
         # シンプルなハッシュベース埋め込み + TF-IDF風
         words = re.findall(r'\b\w+\b', text.lower())
         word_freq = Counter(words)
-        
         hash_bytes = hashlib.sha256(text.encode()).digest()
         seed = int.from_bytes(hash_bytes[:4], 'little')
         rng = np.random.RandomState(seed)
-        
-        vec = rng.randn(self.dimension).astype(np.float32)
-        
+        vec = rng.randn(self.dimension).astype(np.float32)        
         # 単語頻度で重み付け
         for word, freq in word_freq.most_common(10):
             word_seed = int.from_bytes(hashlib.md5(word.encode()).digest()[:4], 'little')
             word_rng = np.random.RandomState(word_seed)
             word_vec = word_rng.randn(self.dimension).astype(np.float32)
             vec += word_vec * (freq / len(words))
-        
         norm = np.linalg.norm(vec)
         return vec / norm if norm > 0 else vec
     
@@ -555,7 +513,6 @@ class VectorDB:
         metadata = metadata or {}
         metadata['text'] = text
         metadata['added_at'] = time.time()
-        
         self.index_cache[id] = len(self.vectors)
         self.vectors.append((id, embedding, metadata))
     
@@ -563,27 +520,20 @@ class VectorDB:
         """類似検索"""
         if not self.vectors:
             return []
-        
         query_vec = self._embed(query)
-        
         # ベクトル化演算で高速化
         all_vecs = np.array([v[1] for v in self.vectors])
         similarities = np.dot(all_vecs, query_vec)
-        
         # 閾値フィルタリング
         valid_indices = np.where(similarities >= min_similarity)[0]
-        
         if len(valid_indices) == 0:
             return []
-        
         # トップK取得
         sorted_indices = valid_indices[np.argsort(similarities[valid_indices])[::-1]][:top_k]
-        
         results = [
             (self.vectors[i][0], float(similarities[i]), self.vectors[i][2])
             for i in sorted_indices
         ]
-        
         return results
     
     def update_metadata(self, id: str, metadata: Dict):
@@ -600,7 +550,6 @@ class VectorDB:
             'dimension': self.dimension,
             'cache_size': len(self._embed.cache_info()._asdict())
         }
-
 
 # ==================== 量子インスパイアモジュール ====================
 
@@ -620,30 +569,25 @@ class QuantumOptimizer:
         # 初期状態: 重ね合わせ（均等分布）
         best_params = np.random.uniform(bounds[0], bounds[1], self.num_qubits)
         best_value = objective_function(best_params)
-        
         for iteration in range(self.config.iterations):
             # 量子ゲート風の操作
             # 1. 回転ゲート（探索）
             rotation_angle = np.pi * (1 - iteration / self.config.iterations)
             candidate = best_params + np.random.randn(self.num_qubits) * rotation_angle * 0.1
             candidate = np.clip(candidate, bounds[0], bounds[1])
-            
             # 2. エンタングルメント（パラメータ間の相関）
             if self.num_qubits > 1:
                 for i in range(self.num_qubits - 1):
                     if np.random.random() < 0.3:
                         coupling = (candidate[i] + candidate[i + 1]) / 2
                         candidate[i] = candidate[i + 1] = coupling
-            
             # 3. 測定（評価）
             value = objective_function(candidate)
-            
             # 4. 振幅増幅（良い解を強化）
             if value > best_value:
                 best_params = candidate
                 best_value = value
                 logger.debug(f"🔮 Quantum iter {iteration}: improved to {value:.4f}")
-        
         return best_params, best_value
     
     def quantum_annealing(
@@ -655,31 +599,24 @@ class QuantumOptimizer:
         """量子アニーリング風の最適化"""
         if temperature_schedule is None:
             temperature_schedule = np.logspace(0, -2, self.config.iterations)
-        
         current_state = initial_state.copy()
         current_energy = energy_function(current_state)
-        
         for temp in temperature_schedule:
             # 隣接状態を生成
             neighbor = current_state + np.random.randn(len(current_state)) * temp
             neighbor = np.clip(neighbor, 0, 1)
-            
             neighbor_energy = energy_function(neighbor)
-            
             # メトロポリス基準
             delta_energy = neighbor_energy - current_energy
             if delta_energy < 0 or np.random.random() < np.exp(-delta_energy / temp):
                 current_state = neighbor
                 current_energy = neighbor_energy
-        
         return current_state
-
 
 # ==================== 遺伝的アルゴリズム ====================
 
 class GeneticPromptEvolver:
     """遺伝的アルゴリズムによるプロンプト進化"""
-    
     def __init__(self, config: GeneticConfig):
         self.config = config
         self.population: List[Prompt] = []
@@ -698,7 +635,6 @@ class GeneticPromptEvolver:
                 genes=template.split()
             )
             self.population.append(prompt)
-        
         # 追加でランダム変異体を生成
         while len(self.population) < self.config.population_size:
             parent = np.random.choice(base_templates)
@@ -728,23 +664,18 @@ class GeneticPromptEvolver:
     def evolve(self, fitness_evaluator: Callable[[Prompt], float]) -> Prompt:
         """一世代進化"""
         self.generation += 1
-        
         # 適応度評価
         for prompt in self.population:
             if prompt.fitness == 0.5:  # 未評価
                 prompt.fitness = fitness_evaluator(prompt)
-        
         # ソート
         self.population.sort(key=lambda p: p.fitness, reverse=True)
-        
         # エリート保存
         elite_count = int(self.config.population_size * self.config.elite_ratio)
         new_population = self.population[:elite_count].copy()
-        
         # 最良個体の追跡
         if self.best_ever is None or self.population[0].fitness > self.best_ever.fitness:
             self.best_ever = self.population[0]
-        
         # 交叉と変異で新個体生成
         while len(new_population) < self.config.population_size:
             # 親選択（トーナメント選択）
@@ -754,17 +685,14 @@ class GeneticPromptEvolver:
             
             tournament = np.random.choice(self.population[:len(self.population)//2], tournament_size)
             parent2 = max(tournament, key=lambda p: p.fitness)
-            
             # 交叉
             if np.random.random() < self.config.crossover_rate:
                 child_template = Prompt.crossover(parent1, parent2)
             else:
                 child_template = parent1.template
-            
             # 変異
             if np.random.random() < self.config.mutation_rate:
                 child_template = self._mutate_template(child_template)
-            
             child = Prompt(
                 id=str(uuid.uuid4())[:8],
                 template=child_template,
@@ -775,16 +703,13 @@ class GeneticPromptEvolver:
             )
             
             new_population.append(child)
-        
         self.population = new_population
         logger.info(f"🧬 Generation {self.generation}: Best fitness = {self.population[0].fitness:.4f}")
-        
         return self.population[0]
     
     def get_best_prompts(self, top_k: int = 3) -> List[Prompt]:
         """上位K個のプロンプトを取得"""
         return sorted(self.population, key=lambda p: p.fitness, reverse=True)[:top_k]
-
 
 # ==================== 群知能 ====================
 
@@ -802,11 +727,9 @@ class SwarmIntelligence:
         """群れを初期化"""
         personas = list(PersonaType)
         self.agents = []
-        
         for i in range(self.config.num_agents):
             position = np.random.random(self.dimension)
             velocity = np.random.randn(self.dimension) * 0.1
-            
             agent = Agent(
                 id=f"agent_{i}",
                 position=position,
@@ -824,24 +747,19 @@ class SwarmIntelligence:
         """群最適化"""
         if not self.agents:
             self.initialize_swarm()
-        
         iterations = max_iterations or self.config.max_iterations
-        
         for iteration in range(iterations):
             # 各エージェントの評価
             for agent in self.agents:
                 fitness = fitness_function(agent.position, agent.persona)
-                
                 # 個体ベスト更新
                 if fitness > agent.best_fitness:
                     agent.best_fitness = fitness
                     agent.best_position = agent.position.copy()
-                
                 # 群ベスト更新
                 if fitness > self.global_best_fitness:
                     self.global_best_fitness = fitness
                     self.global_best_position = agent.position.copy()
-            
             # 速度と位置の更新
             for agent in self.agents:
                 agent.update_velocity(
@@ -851,21 +769,17 @@ class SwarmIntelligence:
                     self.config.social_weight
                 )
                 agent.update_position()
-            
             logger.debug(f"🌊 Swarm iter {iteration}: Best fitness = {self.global_best_fitness:.4f}")
-        
         return self.global_best_position, self.global_best_fitness
     
     def get_consensus(self) -> Dict[str, Any]:
         """群のコンセンサスを取得"""
         if not self.agents:
             return {}
-        
         # 各ペルソナからの意見を集約
         persona_positions = defaultdict(list)
         for agent in self.agents:
             persona_positions[agent.persona].append(agent.best_position)
-        
         consensus = {}
         for persona, positions in persona_positions.items():
             consensus[persona.value] = {
@@ -873,9 +787,7 @@ class SwarmIntelligence:
                 'std': np.std(positions, axis=0),
                 'confidence': np.mean([a.best_fitness for a in self.agents if a.persona == persona])
             }
-        
         return consensus
-
 
 # ==================== RLHF ====================
 
@@ -905,35 +817,28 @@ class RLHFTrainer:
     def update(self, state: str, action: str, reward: float, next_state: str):
         """Q値更新（Q-Learning）"""
         current_q = self.q_table[(state, action)]
-        
         # 次状態の最大Q値
         next_q_values = [self.q_table[(next_state, a)] for a in [action]]  # 簡易版
         max_next_q = max(next_q_values) if next_q_values else 0
-        
         # Q値更新
         new_q = current_q + self.config.learning_rate * (
             reward + self.config.discount_factor * max_next_q - current_q
         )
-        
         self.q_table[(state, action)] = new_q
         self.state_visits[state] += 1
         self.reward_history.append(reward)
-        
         logger.debug(f"🎯 RLHF: state={state}, action={action}, reward={reward:.3f}, Q={new_q:.3f}")
     
     def get_policy(self) -> Dict[str, str]:
         """現在のポリシーを取得"""
         policy = {}
         states = set(s for s, a in self.q_table.keys())
-        
         for state in states:
             state_actions = [(a, q) for (s, a), q in self.q_table.items() if s == state]
             if state_actions:
                 best_action = max(state_actions, key=lambda x: x[1])[0]
                 policy[state] = best_action
-        
         return policy
-
 
 # ==================== 因果推論エンジン ====================
 
@@ -954,7 +859,6 @@ class CausalInferenceEngine:
         """因果関係を追加"""
         cause_id = hashlib.md5(cause.encode()).hexdigest()[:8]
         effect_id = hashlib.md5(effect.encode()).hexdigest()[:8]
-        
         # 原因ノード
         if cause_id not in self.causal_graph:
             self.causal_graph[cause_id] = CausalNode(
@@ -962,7 +866,6 @@ class CausalInferenceEngine:
                 event=cause,
                 probability=probability
             )
-        
         # 結果ノード
         if effect_id not in self.causal_graph:
             self.causal_graph[effect_id] = CausalNode(
@@ -970,68 +873,52 @@ class CausalInferenceEngine:
                 event=effect,
                 probability=probability
             )
-        
         # リンク
         self.causal_graph[cause_id].effects.append(effect_id)
         self.causal_graph[effect_id].causes.append(cause_id)
-        
         if evidence:
             self.causal_graph[effect_id].evidence.extend(evidence)
     
     def infer_cause(self, effect: str, depth: int = 3) -> List[Tuple[str, float]]:
         """結果から原因を推論"""
         effect_id = hashlib.md5(effect.encode()).hexdigest()[:8]
-        
         if effect_id not in self.causal_graph:
             return []
-        
         causes = []
         visited = set()
-        
         def dfs(node_id: str, current_depth: int, prob: float):
             if current_depth > depth or node_id in visited:
-                return
-            
-            visited.add(node_id)
+                return            visited.add(node_id)
             node = self.causal_graph[node_id]
-            
             for cause_id in node.causes:
                 cause_node = self.causal_graph[cause_id]
                 combined_prob = prob * cause_node.probability
                 causes.append((cause_node.event, combined_prob))
                 dfs(cause_id, current_depth + 1, combined_prob)
-        
         dfs(effect_id, 0, 1.0)
         causes.sort(key=lambda x: x[1], reverse=True)
-        
         return causes[:10]
     
     def predict_effect(self, cause: str, depth: int = 3) -> List[Tuple[str, float]]:
         """原因から結果を予測"""
         cause_id = hashlib.md5(cause.encode()).hexdigest()[:8]
-        
         if cause_id not in self.causal_graph:
             return []
-        
         effects = []
         visited = set()
         
         def dfs(node_id: str, current_depth: int, prob: float):
             if current_depth > depth or node_id in visited:
                 return
-            
             visited.add(node_id)
             node = self.causal_graph[node_id]
-            
             for effect_id in node.effects:
                 effect_node = self.causal_graph[effect_id]
                 combined_prob = prob * effect_node.probability
                 effects.append((effect_node.event, combined_prob))
                 dfs(effect_id, current_depth + 1, combined_prob)
-        
         dfs(cause_id, 0, 1.0)
         effects.sort(key=lambda x: x[1], reverse=True)
-        
         return effects[:10]
     
     def do_intervention(self, intervention: str, observe: str) -> float:
@@ -1042,15 +929,12 @@ class CausalInferenceEngine:
             'observation': observe,
             'timestamp': datetime.now()
         })
-        
         # 介入の効果を推定
         effects = self.predict_effect(intervention)
         for effect, prob in effects:
             if observe.lower() in effect.lower():
                 return prob
-        
         return 0.5
-
 
 # ==================== 敵対的テストシステム ====================
 
@@ -1064,25 +948,19 @@ class AdversarialTester:
     def generate_adversarial_queries(self, original: str) -> List[str]:
         """敵対的クエリを生成"""
         adversarial = []
-        
         # 1. 否定パターン
         adversarial.append(f"The opposite of this is true: {original}")
-        
         # 2. 極端なケース
         adversarial.append(f"{original} in the most extreme case possible")
-        
         # 3. 矛盾を含む
         words = original.split()
         if len(words) > 3:
             mid = len(words) // 2
             adversarial.append(f"{' '.join(words[:mid])} but also {' '.join(words[mid:])}")
-        
         # 4. コンテキスト反転
         adversarial.append(f"Assuming the opposite is true, {original}")
-        
         # 5. バイアステスト
         adversarial.append(f"{original} (考えられるバイアスは？)")
-        
         return adversarial
     
     async def test_consistency(
@@ -1093,28 +971,22 @@ class AdversarialTester:
     ) -> AdversarialTest:
         """一貫性テスト"""
         adversarial_queries = self.generate_adversarial_queries(original_query)
-        
         max_inconsistency = 0
         worst_case = None
-        
         for adv_query in adversarial_queries:
             try:
                 adv_response = await query_func(adv_query)
-                
                 # 類似度計算（簡易版）
                 orig_words = set(original_response.lower().split())
                 adv_words = set(adv_response.text.lower().split())
-                
                 if orig_words and adv_words:
                     similarity = len(orig_words & adv_words) / len(orig_words | adv_words)
                     inconsistency = 1 - similarity
-                    
                     if inconsistency > max_inconsistency:
                         max_inconsistency = inconsistency
                         worst_case = (adv_query, adv_response.text)
             except:
                 continue
-        
         test = AdversarialTest(
             id=str(uuid.uuid4())[:8],
             original_query=original_query,
@@ -1124,14 +996,10 @@ class AdversarialTester:
             consistency_score=1 - max_inconsistency,
             vulnerability_detected=max_inconsistency > 0.7
         )
-        
         self.tests.append(test)
-        
         if test.vulnerability_detected:
             self.vulnerabilities[original_query[:50]] += 1
-        
         return test
-
 
 # ==================== 検証システム ====================
 
@@ -1155,12 +1023,10 @@ class VerificationSystem:
         confidence = 0.5
         result = True
         evidence = []
-        
         if method == VerificationMethod.LOGICAL_CONSISTENCY:
             # 論理的一貫性チェック
             contradictions = ['but not', 'however not', 'except']
             has_contradiction = any(c in claim.lower() for c in contradictions)
-            
             if has_contradiction:
                 confidence = 0.3
                 result = False
@@ -1168,25 +1034,20 @@ class VerificationSystem:
             else:
                 confidence = 0.7
                 evidence.append("No obvious contradictions")
-        
         elif method == VerificationMethod.CROSS_REFERENCE:
             # 相互参照チェック
             words = set(claim.lower().split())
             context_words = set(context.lower().split())
-            
             overlap = len(words & context_words) / len(words) if words else 0
             confidence = overlap
             result = overlap > 0.3
             evidence.append(f"Context overlap: {overlap:.2%}")
-        
         elif method == VerificationMethod.FACT_CHECK:
             # ファクトチェック（簡易版）
             uncertain_phrases = ['maybe', 'possibly', 'might', 'could be']
             has_uncertainty = any(p in claim.lower() for p in uncertain_phrases)
-            
             confidence = 0.5 if has_uncertainty else 0.7
             evidence.append("Uncertainty markers detected" if has_uncertainty else "Assertion is confident")
-        
         record = VerificationRecord(
             id=str(uuid.uuid4())[:8],
             claim=claim[:200],
@@ -1195,7 +1056,6 @@ class VerificationSystem:
             confidence=confidence,
             evidence=evidence
         )
-        
         self.records.append(record)
         return record
     
@@ -1203,11 +1063,9 @@ class VerificationSystem:
         """信頼スコアを計算"""
         if not self.records:
             return 0.5
-        
         recent = self.records[-num_verifications:]
         verified = sum(1 for r in recent if r.result)
         avg_confidence = statistics.mean(r.confidence for r in recent)
-        
         return (verified / len(recent)) * avg_confidence
 
 
@@ -1238,7 +1096,6 @@ class CreativeSynthesizer:
         
         # 統合アイデア生成（簡易版）
         synthesis_text = f"A fusion of {concept_a} and {concept_b}, creating a hybrid that combines the best of both"
-        
         synthesis = CreativeSynthesis(
             id=str(uuid.uuid4())[:8],
             concept_a=concept_a,
@@ -1248,7 +1105,6 @@ class CreativeSynthesizer:
             coherence_score=0.8,  # 簡易評価
             usefulness_score=0.7
         )
-        
         self.syntheses.append(synthesis)
         return synthesis
     
@@ -1262,7 +1118,6 @@ class CreativeSynthesizer:
         rng = np.random.RandomState(hash_val % (2**32))
         embedding = rng.randn(128).astype(np.float32)
         embedding = embedding / np.linalg.norm(embedding)
-        
         self.concept_space[concept] = embedding
         return embedding
     
@@ -1270,18 +1125,14 @@ class CreativeSynthesizer:
         """類推を発見"""
         if concept not in self.concept_space:
             self._embed_concept(concept)
-        
         concept_vec = self.concept_space[concept]
         similarities = []
-        
         for other_concept, other_vec in self.concept_space.items():
             if other_concept != concept:
                 similarity = np.dot(concept_vec, other_vec)
                 similarities.append((other_concept, float(similarity)))
-        
         similarities.sort(key=lambda x: x[1], reverse=True)
         return similarities[:top_k]
-
 
 # ==================== 予測モデリング ====================
 
@@ -1304,26 +1155,22 @@ class PredictiveQueryEngine:
         # パターン更新
         hour = datetime.now().hour
         day = datetime.now().weekday()
-        
         pattern_key = f"{intent.value}_{hour}_{day}"
         if pattern_key not in self.model.user_patterns:
             self.model.user_patterns[pattern_key] = []
-        
         self.model.user_patterns[pattern_key].append(1.0 if success else 0.0)
     
     def predict_next_intent(self) -> Intent:
         """次の意図を予測"""
         if len(self.query_history) < 3:
             return Intent.QUESTION
-        
         # 最近のパターンから予測
         recent_intents = [q['intent'] for q in list(self.query_history)[-5:]]
         intent_counts = Counter(recent_intents)
-        
         most_common = intent_counts.most_common(1)[0][0]
         return most_common
-    
-    def get_success_probability(self, intent: Intent) -> float:
+        
+        def get_success_probability(self, intent: Intent) -> float:
         """成功確率を予測"""
         hour = datetime.now().hour
         day = datetime.now().weekday()
@@ -1333,9 +1180,7 @@ class PredictiveQueryEngine:
             results = self.model.user_patterns[pattern_key]
             if results:
                 return statistics.mean(results)
-        
         return 0.5
-
 
 # ==================== 科学的手法適用システム ====================
 
@@ -1356,7 +1201,6 @@ class ScientificMethodEngine:
             confidence=0.5,
             bayesian_prior=0.5
         )
-        
         self.hypotheses.append(hypothesis)
         return hypothesis
     
@@ -1375,7 +1219,6 @@ class ScientificMethodEngine:
             'status': 'designed',
             'created': datetime.now()
         }
-        
         self.experiments.append(experiment)
         return experiment
     
@@ -1389,7 +1232,6 @@ class ScientificMethodEngine:
             'conclusion': 'Results support the hypothesis',
             'timestamp': datetime.now()
         }
-        
         return analysis
     
     def peer_review(self, hypothesis: Hypothesis, reviews: List[str]) -> float:
@@ -1397,7 +1239,6 @@ class ScientificMethodEngine:
         # 簡易的なレビュースコア
         positive_words = ['valid', 'sound', 'rigorous', 'excellent']
         negative_words = ['flawed', 'weak', 'insufficient', 'poor']
-        
         scores = []
         for review in reviews:
             review_lower = review.lower()
@@ -1406,7 +1247,6 @@ class ScientificMethodEngine:
             
             score = (pos_count - neg_count + 3) / 6  # 正規化
             scores.append(max(0, min(1, score)))
-        
         return statistics.mean(scores) if scores else 0.5
 
 
@@ -1450,21 +1290,18 @@ class AdvancedKnowledgeGraph:
         visited = set()
         communities = {}
         community_id = 0
-        
         def dfs(node_id: str, community: Set[str]):
             visited.add(node_id)
             community.add(node_id)
             for neighbor in self.get_neighbors(node_id):
                 if neighbor not in visited:
                     dfs(neighbor, community)
-        
         for node_id in self.nodes:
             if node_id not in visited:
                 community = set()
                 dfs(node_id, community)
                 communities[f"community_{community_id}"] = community
                 community_id += 1
-        
         self.communities = communities
         return communities
     
@@ -1475,10 +1312,8 @@ class AdvancedKnowledgeGraph:
         for node_id in self.nodes:
             degree = len(self.get_neighbors(node_id))
             degree_centrality[node_id] = degree
-        
         sorted_nodes = sorted(degree_centrality.items(), key=lambda x: x[1], reverse=True)
         return sorted_nodes[:top_k]
-    
     def query_subgraph(self, query: str, depth: int = 2) -> Dict[str, Any]:
         """クエリに関連するサブグラフを取得"""
         # クエリからエンティティを抽出
@@ -1492,23 +1327,20 @@ class AdvancedKnowledgeGraph:
             if overlap > 0:
                 node.relevance_score = overlap / len(query_words)
                 relevant_nodes.append(node_id)
-        
         if not relevant_nodes:
             return {'nodes': [], 'edges': []}
         
-        # 深さ優先でサブグラフを展開
+        # サブグラフを展開
         subgraph_nodes = set(relevant_nodes)
         for _ in range(depth):
             new_nodes = set()
             for node_id in list(subgraph_nodes):
                 new_nodes.update(self.get_neighbors(node_id))
             subgraph_nodes.update(new_nodes)
-        
         subgraph_edges = [
             e for e in self.edges
             if e.source in subgraph_nodes and e.target in subgraph_nodes
         ]
-        
         return {
             'nodes': [self.nodes[nid] for nid in subgraph_nodes],
             'edges': subgraph_edges,
@@ -1520,7 +1352,6 @@ class AdvancedKnowledgeGraph:
 
 class QuantumLLM:
     """Quantum-Enhanced LLM System v3.5 ULTIMATE"""
-    
     MODELS = {
         'llama-3.1-8b-instant': {'cost': 'low', 'quality': 'medium', 'speed': 'fast'},
         'llama-3.1-70b-versatile': {'cost': 'medium', 'quality': 'high', 'speed': 'medium'},
@@ -1531,7 +1362,6 @@ class QuantumLLM:
         self.api_key = api_key or os.environ.get('GROQ_API_KEY')
         if not self.api_key:
             raise ValueError("❌ GROQ_API_KEY required")
-        
         self.config = config or SystemConfig()
         self.client = Groq(api_key=self.api_key)
         
@@ -1588,7 +1418,6 @@ class QuantumLLM:
                 "Consider causal relationships and logical implications."
             ]
             self.genetic_evolver.initialize_population(base_prompts, "general")
-        
         logger.info(f"✅ Quantum-Enhanced LLM v3.5 ULTIMATE initialized")
         self._log_features()
     
@@ -1627,13 +1456,11 @@ class QuantumLLM:
             features.append("🔮Predict")
         if self.config.scientific_method:
             features.append("🔬Scientific")
-        
         logger.info(" | ".join(features))
     
     async def query_async(self, query: str, **kwargs) -> Response:
         """メインクエリ処理（非同期）- 究極版"""
         self.metrics['queries'] += 1
-        
         try:
             # 予測モデリング
             if self.predictive_engine:
@@ -1661,7 +1488,6 @@ class QuantumLLM:
             # クエリ分析
             intent, complexity = self._analyze_query(query)
             strategy = self._select_strategy(intent, complexity)
-            
             model = kwargs.get('model', self.config.model)
             
             # 科学的手法の適用
@@ -1711,7 +1537,6 @@ class QuantumLLM:
                     response.text
                 )
                 self.metrics['adversarial_tests'] += 1
-                
                 if adversarial_test.vulnerability_detected:
                     logger.warning(f"🎪 Adversarial vulnerability detected! Consistency: {adversarial_test.consistency_score:.2f}")
                     response.uncertainty += 0.1
@@ -1751,9 +1576,7 @@ class QuantumLLM:
             # リアルタイム学習
             if self.config.real_time_learning:
                 self._update_learning_trajectory(query, response)
-            
             return response
-        
         except Exception as e:
             logger.error(f"Query failed: {e}")
             return Response(
@@ -1867,23 +1690,19 @@ class QuantumLLM:
                     s.novelty_score for s in self.creative_synthesizer.syntheses
                 ) if self.creative_synthesizer.syntheses else 0
             }
-        
         return stats
     
     def analyze_learning_progress(self) -> Dict:
         """学習進捗を分析"""
         trajectory = self.profile.get('learning_trajectory', [])
-        
         if len(trajectory) < 10:
             return {'status': 'insufficient_data'}
         
         # 時系列分析
         recent = trajectory[-50:]
         older = trajectory[-100:-50] if len(trajectory) >= 100 else trajectory[:-50]
-        
         recent_quality = statistics.mean(t['quality'] for t in recent)
         older_quality = statistics.mean(t['quality'] for t in older) if older else recent_quality
-        
         improvement = recent_quality - older_quality
         
         # 戦略効果分析
@@ -1891,12 +1710,10 @@ class QuantumLLM:
         for t in trajectory:
             if t.get('strategy'):
                 strategy_performance[t['strategy']].append(t['quality'])
-        
         best_strategy = max(
             strategy_performance.items(),
             key=lambda x: statistics.mean(x[1]) if x[1] else 0
         )[0] if strategy_performance else None
-        
         return {
             'status': 'analyzed',
             'total_interactions': len(trajectory),
@@ -1920,7 +1737,6 @@ class QuantumLLM:
                 insights.append(f"📈 Learning trend: Improving (+{progress['improvement']:.3f})")
             elif progress['trend'] == 'declining':
                 insights.append(f"📉 Learning trend: Needs attention ({progress['improvement']:.3f})")
-            
             if progress['best_strategy']:
                 insights.append(f"🎯 Most effective strategy: {progress['best_strategy']}")
         
@@ -1929,7 +1745,6 @@ class QuantumLLM:
         
         if 'ultimate' in stats:
             ultimate = stats['ultimate']
-            
             if ultimate['adversarial_tests'] > 10:
                 if 'adversarial' in stats:
                     consistency = stats['adversarial']['avg_consistency']
@@ -1937,7 +1752,6 @@ class QuantumLLM:
                         insights.append(f"✅ High adversarial robustness ({consistency:.2f})")
                     else:
                         insights.append(f"⚠️  Adversarial vulnerabilities detected ({consistency:.2f})")
-            
             if ultimate['verifications'] > 20:
                 if 'verification' in stats:
                     trust = stats['verification']['trust_score']
@@ -1954,7 +1768,6 @@ class QuantumLLM:
         if self.knowledge_graph and len(self.knowledge_graph.nodes) > 100:
             growth_rate = len(self.knowledge_graph.nodes) / max(self.metrics['queries'], 1)
             insights.append(f"🧩 Knowledge graph: {len(self.knowledge_graph.nodes)} concepts (growth: {growth_rate:.1f}/query)")
-        
         return insights
     
     def _analyze_query(self, query: str) -> Tuple[Intent, Complexity]:
@@ -1972,7 +1785,6 @@ class QuantumLLM:
             Intent.DEBUGGING: ['bug', 'error', 'fix', 'debug', 'issue'],
             Intent.OPTIMIZATION: ['optimize', 'improve', 'enhance', 'better']
         }
-        
         intent = Intent.QUESTION
         max_matches = 0
         for int_type, patterns in intent_patterns.items():
@@ -1985,15 +1797,12 @@ class QuantumLLM:
         complexity_score = 0
         complexity_score += len(query) // 100
         complexity_score += q.count('?')
-        
         frontier_words = ['breakthrough', 'novel', 'unprecedented', 'cutting-edge']
         research_words = ['hypothesis', 'theory', 'prove', 'demonstrate']
         expert_words = ['advanced', 'sophisticated', 'complex', 'intricate']
-        
         complexity_score += sum(5 for w in frontier_words if w in q)
         complexity_score += sum(4 for w in research_words if w in q)
         complexity_score += sum(3 for w in expert_words if w in q)
-        
         if complexity_score < 2:
             complexity = Complexity.TRIVIAL
         elif complexity_score < 4:
@@ -2008,7 +1817,6 @@ class QuantumLLM:
             complexity = Complexity.RESEARCH
         else:
             complexity = Complexity.FRONTIER
-        
         return intent, complexity
     
     def _select_strategy(self, intent: Intent, complexity: Complexity) -> Strategy:
@@ -2046,7 +1854,6 @@ class QuantumLLM:
                 return Strategy(recommended)
             except:
                 pass
-        
         return Strategy.DIRECT
     
     async def _call_api(
@@ -2091,7 +1898,6 @@ class QuantumLLM:
             Strategy.DEBATE: "Present multiple viewpoints and synthesize them.",
             Strategy.TREE_SEARCH: "Explore different reasoning paths systematically."
         }
-        
         strategy_text = strategy_instructions.get(strategy, "")
         
         # 複雑度別の調整
@@ -2109,9 +1915,7 @@ class QuantumLLM:
             if subgraph['nodes']:
                 node_names = [n.name for n in subgraph['nodes'][:3]]
                 kg_context = f" Related concepts: {', '.join(node_names)}."
-        
         prompt = f"{base} {strategy_text} {complexity_text}{kg_context}"
-        
         return prompt.strip()
     
     async def _execute_quantum_strategy(
@@ -2133,10 +1937,8 @@ class QuantumLLM:
             return score
         
         optimized_params, _ = self.quantum_optimizer.optimize_parameters(objective)
-        
         temperature = float(optimized_params[0])
         system_prompt = self._build_system_prompt(query, intent, complexity, Strategy.QUANTUM)
-        
         start_time = time.time()
         api_response = await self._call_api(
             model,
@@ -2148,10 +1950,8 @@ class QuantumLLM:
             self.config.max_tokens
         )
         latency = (time.time() - start_time) * 1000
-        
         response = self._build_response(api_response, model, Strategy.QUANTUM, latency)
         response.quantum_optimized = True
-        
         return response
     
     async def _execute_genetic_strategy(
@@ -2169,13 +1969,10 @@ class QuantumLLM:
         def fitness_func(prompt: Prompt):
             # 簡易評価（実際は応答品質で評価）
             return prompt.success_rate * 0.5 + prompt.avg_quality * 0.5
-        
         for _ in range(3):  # 3世代進化
             best_prompt = self.genetic_evolver.evolve(fitness_func)
-        
         system_prompt = self._build_system_prompt(query, intent, complexity, Strategy.GENETIC)
         enhanced_query = f"{best_prompt.template}\n\n{query}"
-        
         start_time = time.time()
         api_response = await self._call_api(
             model,
@@ -2187,10 +1984,8 @@ class QuantumLLM:
             self.config.max_tokens
         )
         latency = (time.time() - start_time) * 1000
-        
         response = self._build_response(api_response, model, Strategy.GENETIC, latency)
         response.genetic_fitness = best_prompt.fitness
-        
         return response
     
     async def _execute_swarm_strategy(
@@ -2207,11 +2002,9 @@ class QuantumLLM:
         # 各ペルソナからの応答を収集
         personas = [PersonaType.OPTIMIST, PersonaType.PESSIMIST, PersonaType.PRAGMATIST]
         responses = []
-        
         for persona in personas:
             persona_prompt = f"As a {persona.value}, answer: {query}"
             system_prompt = self._build_system_prompt(query, intent, complexity, Strategy.SWARM)
-            
             try:
                 api_response = await self._call_api(
                     model,
@@ -2222,7 +2015,6 @@ class QuantumLLM:
                     0.7,
                     self.config.max_tokens // 2
                 )
-                
                 text = api_response.choices[0].message.content or ""
                 responses.append({
                     'persona': persona.value,
@@ -2231,17 +2023,16 @@ class QuantumLLM:
                 })
             except Exception as e:
                 logger.warning(f"Swarm agent {persona.value} failed: {e}")
-        
         if not responses:
+            
             # フォールバック
             return await self._execute_direct(query, model, intent, complexity)
-        
+            
         # コンセンサス合成
         synthesis_prompt = f"Synthesize these perspectives:\n\n"
         for resp in responses:
             synthesis_prompt += f"{resp['persona']}: {resp['text'][:200]}...\n\n"
         synthesis_prompt += f"\nProvide a balanced synthesis answering: {query}"
-        
         start_time = time.time()
         final_response = await self._call_api(
             model,
@@ -2253,14 +2044,12 @@ class QuantumLLM:
             self.config.max_tokens
         )
         latency = (time.time() - start_time) * 1000
-        
         response = self._build_response(final_response, model, Strategy.SWARM, latency)
         response.personas_involved = [r['persona'] for r in responses]
         response.swarm_consensus = statistics.mean(r['confidence'] for r in responses)
         response.alternatives = [{'persona': r['persona'], 'text': r['text'][:100]} for r in responses]
-        
         return response
-    
+        
     async def _execute_direct(
         self,
         query: str,
@@ -2270,7 +2059,6 @@ class QuantumLLM:
     ) -> Response:
         """直接実行"""
         system_prompt = self._build_system_prompt(query, intent, complexity, Strategy.DIRECT)
-        
         start_time = time.time()
         api_response = await self._call_api(
             model,
@@ -2282,7 +2070,6 @@ class QuantumLLM:
             self.config.max_tokens
         )
         latency = (time.time() - start_time) * 1000
-        
         return self._build_response(api_response, model, Strategy.DIRECT, latency)
     
     def _build_response(
@@ -2295,7 +2082,6 @@ class QuantumLLM:
         """応答オブジェクト構築"""
         choice = api_response.choices[0]
         text = choice.message.content or ""
-        
         usage = api_response.usage
         cost = self._calculate_cost(model, usage.prompt_tokens, usage.completion_tokens)
         
@@ -2310,7 +2096,6 @@ class QuantumLLM:
         base_confidence = 0.9 if choice.finish_reason == "stop" else 0.75
         uncertainty = sum(0.1 for phrase in ['maybe', 'perhaps', 'possibly'] if phrase in text.lower())
         confidence = max(0, min(1, base_confidence - uncertainty * 0.1))
-        
         return Response(
             text=text,
             confidence=confidence,
@@ -2343,7 +2128,6 @@ class QuantumLLM:
     async def query_async(self, query: str, **kwargs) -> Response:
         """メインクエリ処理（非同期）"""
         self.metrics['queries'] += 1
-        
         try:
             # キャッシュチェック
             if self.vector_db:
@@ -2365,7 +2149,6 @@ class QuantumLLM:
             # クエリ分析
             intent, complexity = self._analyze_query(query)
             strategy = self._select_strategy(intent, complexity)
-            
             model = kwargs.get('model', self.config.model)
             
             # 戦略実行
@@ -2409,9 +2192,7 @@ class QuantumLLM:
             # 知識グラフ更新
             if self.knowledge_graph:
                 self._update_knowledge_graph(query, response.text)
-            
             return response
-        
         except Exception as e:
             logger.error(f"Query failed: {e}")
             return Response(
@@ -2428,7 +2209,6 @@ class QuantumLLM:
         """知識グラフを更新"""
         # エンティティ抽出（簡易版）
         entities = re.findall(r'\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b', response)
-        
         for entity in set(entities[:5]):
             node_id = hashlib.md5(entity.encode()).hexdigest()[:8]
             node = KnowledgeNode(
@@ -2483,7 +2263,6 @@ class QuantumLLM:
                         prompt.success_count += 1
                     prompt.avg_quality = (prompt.avg_quality * (prompt.usage_count - 1) + abs(rating)) / prompt.usage_count
                     prompt.fitness = prompt.success_rate * 0.5 + prompt.avg_quality * 0.5
-        
         logger.info(f"🎯 Feedback: {rating:+d} | Strategy: {response_obj.strategy if response_obj else 'N/A'}")
     
     def get_stats(self) -> Dict:
@@ -2533,7 +2312,6 @@ class QuantumLLM:
                 'total_updates': sum(self.rlhf.state_visits.values()),
                 'avg_reward': statistics.mean(self.rlhf.reward_history) if self.rlhf.reward_history else 0
             }
-        
         return stats
     
     def save_state(self, filepath: str = 'quantum_llm_state.json'):
@@ -2550,10 +2328,8 @@ class QuantumLLM:
                 'metrics': self.metrics,
                 'timestamp': datetime.now().isoformat()
             }
-            
             with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump(state, f, ensure_ascii=False, indent=2)
-            
             logger.info(f"💾 State saved: {filepath}")
         except Exception as e:
             logger.error(f"❌ Save failed: {e}")
@@ -2563,16 +2339,13 @@ class QuantumLLM:
         try:
             with open(filepath, 'r', encoding='utf-8') as f:
                 state = json.load(f)
-            
             profile_data = state.get('profile', {})
             self.profile['topics'] = defaultdict(int, profile_data.get('topics', {}))
             self.profile['expertise'] = defaultdict(float, profile_data.get('expertise', {}))
             self.profile['strategy_preference'] = defaultdict(float, profile_data.get('strategy_preference', {}))
             self.profile['interaction_count'] = profile_data.get('interaction_count', 0)
             self.profile['feedback_history'] = profile_data.get('feedback_history', [])
-            
             self.metrics.update(state.get('metrics', {}))
-            
             logger.info(f"📂 State loaded: {filepath}")
         except FileNotFoundError:
             logger.info("ℹ️  No saved state found")
@@ -2660,7 +2433,6 @@ class QuantumChat:
         
         # メタデータ
         metadata = []
-        
         if response.strategy:
             emoji = {
                 Strategy.QUANTUM: "🔮",
@@ -2671,16 +2443,13 @@ class QuantumChat:
                 Strategy.DEBATE: "🗣️"
             }.get(response.strategy, "📋")
             metadata.append(f"{emoji}{response.strategy.value}")
-        
         if response.complexity:
             metadata.append(f"⚙️{response.complexity.value}")
-        
         metadata.append(f"⭐{response.quality_score:.2f}")
         metadata.append(f"✅{response.confidence:.2f}")
         metadata.append(f"🎲{response.uncertainty:.2f}")
         metadata.append(f"💰${response.cost:.6f}")
         metadata.append(f"⏱️{response.latency:.0f}ms")
-        
         if response.quantum_optimized:
             metadata.append("🔮Optimized")
         if response.genetic_fitness > 0:
@@ -2689,25 +2458,20 @@ class QuantumChat:
             metadata.append(f"🌊Consensus:{response.swarm_consensus:.2f}")
         if response.cached:
             metadata.append(f"💾Cache")
-        
         print(" | ".join(metadata))
         
         # 追加情報
         if response.personas_involved:
             print(f"\n🎭 Personas: {', '.join(response.personas_involved)}")
-        
         if response.reasoning_steps:
             print(f"\n🧠 Reasoning Steps: {len(response.reasoning_steps)} steps")
-        
         if response.alternatives:
             print(f"\n🔄 Alternatives: {len(response.alternatives)} considered")
-        
         print()
     
     def print_stats(self):
         """統計表示"""
         stats = self.llm.get_stats()
-        
         print("\n" + "=" * 80)
         print("📊 System Statistics")
         print("=" * 80)
@@ -2755,7 +2519,6 @@ class QuantumChat:
             print(f"   States Explored: {rl['states_explored']}")
             print(f"   Total Updates: {rl['total_updates']}")
             print(f"   Avg Reward: {rl['avg_reward']:.3f}")
-        
         print("=" * 80 + "\n")
     
     def _analyze_causality(self, event: str):
@@ -2763,14 +2526,12 @@ class QuantumChat:
         if not self.llm.causal_engine:
             print("❌ Causal reasoning disabled")
             return
-        
         print("\n" + "=" * 80)
         print(f"🧩 Causal Analysis: '{event}'")
         print("=" * 80)
         
         # 原因を推論
         causes = self.llm.causal_engine.infer_cause(event, depth=3)
-        
         if causes:
             print(f"\n🔍 Potential Causes:")
             for i, (cause, prob) in enumerate(causes, 1):
@@ -2781,7 +2542,6 @@ class QuantumChat:
         
         # 結果を予測
         effects = self.llm.causal_engine.predict_effect(event, depth=3)
-        
         if effects:
             print(f"\n🔮 Potential Effects:")
             for i, (effect, prob) in enumerate(effects, 1):
@@ -2794,10 +2554,8 @@ class QuantumChat:
         if cmd == '/exit':
             print("👋 Goodbye!")
             return False
-        
         elif cmd == '/help':
             self.print_welcome()
-        
         elif cmd == '/stats':
             self.print_stats()
         
@@ -2805,14 +2563,11 @@ class QuantumChat:
         elif cmd == '/save':
             filepath = parts[1] if len(parts) > 1 else 'quantum_llm_state.json'
             self.llm.save_state(filepath)
-        
         elif cmd == '/load':
             filepath = parts[1] if len(parts) > 1 else 'quantum_llm_state.json'
             self.llm.load_state(filepath)
-        
         elif cmd == '/export':
             self._export_data()
-        
         elif cmd == '/clear':
             self.history.clear()
             self.llm.context_window.clear()
@@ -2825,30 +2580,25 @@ class QuantumChat:
             if not self.history:
                 print("❌ No previous response to rate")
                 return True
-            
             try:
                 rating = int(parts[1]) if len(parts) > 1 else 0
                 if rating < -2 or rating > 2:
                     print("❌ Rating must be between -2 and +2")
                     return True
-                
                 last_query, last_response = self.history[-1]
                 self.llm.add_feedback(last_query, last_response.text, rating, last_response)
                 print(f"✅ Feedback recorded: {rating:+d}")
             except ValueError:
                 print("❌ Invalid rating")
-        
         elif cmd == '/rate':
             if not self.history:
                 print("❌ No previous response to rate")
                 return True
-            
             try:
                 rating = int(parts[1]) if len(parts) > 1 else 3
                 if rating < 1 or rating > 5:
                     print("❌ Rating must be between 1 and 5")
                     return True
-                
                 # 5段階を-2~+2に変換
                 converted = rating - 3
                 last_query, last_response = self.history[-1]
@@ -2859,39 +2609,28 @@ class QuantumChat:
         
         elif cmd == '/review':
             self._show_feedback_history()
-        
         elif cmd == '/improve':
             self._show_improvements()
-        
-        # ========== 高度な機能 ==========
         elif cmd == '/quantum':
             self._show_quantum_info()
-        
         elif cmd == '/genetic':
             self._show_genetic_info()
-        
         elif cmd == '/swarm':
             self._show_swarm_info()
-        
         elif cmd == '/rlhf':
             self._show_rlhf_info()
-        
         elif cmd == '/kg':
             self._show_knowledge_graph()
-        
         elif cmd == '/hypothesis':
             self._show_hypothesis_history()
         
         # ========== 表示・設定 ==========
         elif cmd == '/history':
             self._show_history()
-        
         elif cmd == '/profile':
             self._show_profile()
-        
         elif cmd == '/config':
             self._show_config()
-        
         elif cmd == '/set':
             if len(parts) < 3:
                 print("❌ Usage: /set <key> <value>")
@@ -2905,17 +2644,14 @@ class QuantumChat:
             else:
                 text = ' '.join(parts[1:])
                 self._analyze_text(text)
-        
         elif cmd == '/search':
             if len(parts) < 2:
                 print("❌ Usage: /search <query>")
             else:
                 query = ' '.join(parts[1:])
                 self._search_knowledge(query)
-        
         elif cmd == '/topics':
             self._show_topics()
-        
         elif cmd == '/insights':
             self._generate_insights()
         
@@ -2927,28 +2663,22 @@ class QuantumChat:
             else:
                 strategy = parts[1]
                 self._run_experiment(strategy)
-        
         elif cmd == '/compare':
             if len(parts) < 2:
                 print("❌ Usage: /compare <query>")
             else:
                 query = ' '.join(parts[1:])
                 self._compare_strategies(query)
-        
         elif cmd == '/benchmark':
             self._run_benchmark()
-        
         elif cmd == '/debug':
             self._show_debug_info()
-        
-        # ========== 究極の機能 ==========
         elif cmd == '/causal':
             if len(parts) < 2:
                 print("❌ Usage: /causal <event>")
             else:
                 event = ' '.join(parts[1:])
                 self._analyze_causality(event)
-        
         elif cmd == '/synthesize':
             if len(parts) < 3:
                 print("❌ Usage: /synthesize <concept_a> <concept_b>")
@@ -2956,64 +2686,52 @@ class QuantumChat:
                 concept_a = parts[1]
                 concept_b = parts[2]
                 self._creative_synthesis(concept_a, concept_b)
-        
         elif cmd == '/verify':
             if len(parts) < 2:
                 print("❌ Usage: /verify <claim>")
             else:
                 claim = ' '.join(parts[1:])
                 self._verify_claim(claim)
-        
         elif cmd == '/adversarial':
             self._run_adversarial_test()
-        
         elif cmd == '/predict':
             self._show_predictions()
-        
         elif cmd == '/scientific':
             if len(parts) < 2:
                 print("❌ Usage: /scientific <observation>")
             else:
                 observation = ' '.join(parts[1:])
                 self._apply_scientific_method(observation)
-        
         elif cmd == '/progress':
             self._show_learning_progress()
-        
         elif cmd == '/meta':
             self._show_meta_insights()
-        
         elif cmd == '/analogies':
             if len(parts) < 2:
                 print("❌ Usage: /analogies <concept>")
             else:
                 concept = ' '.join(parts[1:])
                 self._find_analogies(concept)
-        
         elif cmd == '/trust':
             self._show_trust_score()
-        
         else:
             print(f"❌ Unknown command: {cmd}")
             print("💡 Type /help for available commands")
-        
         return True
     
-    # ========== 究極の機能の補助メソッド ==========
+    # ========== 補助メソッド ==========
     
     def _analyze_causality(self, event: str):
         """因果関係分析"""
         if not self.llm.causal_engine:
             print("❌ Causal reasoning disabled")
             return
-        
         print("\n" + "=" * 80)
         print(f"🧩 Causal Analysis: '{event}'")
         print("=" * 80)
         
         # 原因を推論
         causes = self.llm.causal_engine.infer_cause(event, depth=3)
-        
         if causes:
             print(f"\n🔍 Potential Causes:")
             for i, (cause, prob) in enumerate(causes, 1):
@@ -3024,7 +2742,6 @@ class QuantumChat:
         
         # 結果を予測
         effects = self.llm.causal_engine.predict_effect(event, depth=3)
-        
         if effects:
             print(f"\n🔮 Potential Effects:")
             for i, (effect, prob) in enumerate(effects, 1):
@@ -3042,10 +2759,8 @@ class QuantumChat:
         if cmd == '/exit':
             print("👋 Goodbye!")
             return False
-        
         elif cmd == '/help':
             self.print_welcome()
-        
         elif cmd == '/stats':
             self.print_stats()
         
@@ -3053,14 +2768,11 @@ class QuantumChat:
         elif cmd == '/save':
             filepath = parts[1] if len(parts) > 1 else 'quantum_llm_state.json'
             self.llm.save_state(filepath)
-        
         elif cmd == '/load':
             filepath = parts[1] if len(parts) > 1 else 'quantum_llm_state.json'
             self.llm.load_state(filepath)
-        
         elif cmd == '/export':
             self._export_data()
-        
         elif cmd == '/clear':
             self.history.clear()
             self.llm.context_window.clear()
@@ -3073,24 +2785,20 @@ class QuantumChat:
             if not self.history:
                 print("❌ No previous response to rate")
                 return True
-            
             try:
                 rating = int(parts[1]) if len(parts) > 1 else 0
                 if rating < -2 or rating > 2:
                     print("❌ Rating must be between -2 and +2")
                     return True
-                
                 last_query, last_response = self.history[-1]
                 self.llm.add_feedback(last_query, last_response.text, rating, last_response)
                 print(f"✅ Feedback recorded: {rating:+d}")
             except ValueError:
                 print("❌ Invalid rating")
-        
         elif cmd == '/rate':
             if not self.history:
                 print("❌ No previous response to rate")
                 return True
-            
             try:
                 rating = int(parts[1]) if len(parts) > 1 else 3
                 if rating < 1 or rating > 5:
@@ -3104,42 +2812,30 @@ class QuantumChat:
                 print(f"⭐ Rated: {rating}/5 stars")
             except ValueError:
                 print("❌ Invalid rating")
-        
         elif cmd == '/review':
             self._show_feedback_history()
-        
         elif cmd == '/improve':
             self._show_improvements()
-        
-        # ========== 高度な機能 ==========
         elif cmd == '/quantum':
             self._show_quantum_info()
-        
         elif cmd == '/genetic':
             self._show_genetic_info()
-        
         elif cmd == '/swarm':
             self._show_swarm_info()
-        
         elif cmd == '/rlhf':
             self._show_rlhf_info()
-        
         elif cmd == '/kg':
             self._show_knowledge_graph()
-        
         elif cmd == '/hypothesis':
             self._show_hypothesis_history()
         
         # ========== 表示・設定 ==========
         elif cmd == '/history':
             self._show_history()
-        
         elif cmd == '/profile':
             self._show_profile()
-        
         elif cmd == '/config':
             self._show_config()
-        
         elif cmd == '/set':
             if len(parts) < 3:
                 print("❌ Usage: /set <key> <value>")
@@ -3153,17 +2849,14 @@ class QuantumChat:
             else:
                 text = ' '.join(parts[1:])
                 self._analyze_text(text)
-        
         elif cmd == '/search':
             if len(parts) < 2:
                 print("❌ Usage: /search <query>")
             else:
                 query = ' '.join(parts[1:])
                 self._search_knowledge(query)
-        
         elif cmd == '/topics':
             self._show_topics()
-        
         elif cmd == '/insights':
             self._generate_insights()
         
@@ -3175,24 +2868,20 @@ class QuantumChat:
             else:
                 strategy = parts[1]
                 self._run_experiment(strategy)
-        
         elif cmd == '/compare':
             if len(parts) < 2:
                 print("❌ Usage: /compare <query>")
             else:
                 query = ' '.join(parts[1:])
                 self._compare_strategies(query)
-        
         elif cmd == '/benchmark':
             self._run_benchmark()
             
-        
         # 介入シミュレーション
         print(f"\n💡 Intervention Simulation:")
         print(f"   If we intervene on '{event[:40]}...', we can expect:")
         for effect, prob in effects[:3]:
             print(f"   • {effect[:60]}... (likelihood: {prob:.0%})")
-        
         print("=" * 80 + "\n")
     
     def _creative_synthesis(self, concept_a: str, concept_b: str):
@@ -3200,27 +2889,20 @@ class QuantumChat:
         if not self.llm.creative_synthesizer:
             print("❌ Creative synthesis disabled")
             return
-        
         print("\n" + "=" * 80)
         print(f"🎨 Creative Synthesis: '{concept_a}' + '{concept_b}'")
         print("=" * 80)
-        
         synthesis = self.llm.creative_synthesizer.synthesize(concept_a, concept_b)
-        
         print(f"\n💡 Synthesized Concept:")
         print(f"   {synthesis.synthesis}")
-        
         print(f"\n📊 Metrics:")
         novelty_bar = "█" * int(synthesis.novelty_score * 20) + "░" * (20 - int(synthesis.novelty_score * 20))
         coherence_bar = "█" * int(synthesis.coherence_score * 20) + "░" * (20 - int(synthesis.coherence_score * 20))
         useful_bar = "█" * int(synthesis.usefulness_score * 20) + "░" * (20 - int(synthesis.usefulness_score * 20))
-        
         print(f"   Novelty:     [{novelty_bar}] {synthesis.novelty_score:.2%}")
         print(f"   Coherence:   [{coherence_bar}] {synthesis.coherence_score:.2%}")
         print(f"   Usefulness:  [{useful_bar}] {synthesis.usefulness_score:.2%}")
-        
         print(f"\n🌟 Overall Innovation Score: {(synthesis.novelty_score + synthesis.coherence_score + synthesis.usefulness_score) / 3:.2%}")
-        
         print("=" * 80 + "\n")
     
     def _verify_claim(self, claim: str):
@@ -3228,7 +2910,6 @@ class QuantumChat:
         if not self.llm.verification_system:
             print("❌ Verification system disabled")
             return
-        
         print("\n" + "=" * 80)
         print(f"🔐 Claim Verification")
         print("=" * 80)
@@ -3240,13 +2921,11 @@ class QuantumChat:
             VerificationMethod.CROSS_REFERENCE,
             VerificationMethod.FACT_CHECK
         ]
-        
         results = []
         for method in methods:
             context = ' '.join([q for q, _ in self.history[-3:]]) if self.history else ""
             verification = self.llm.verification_system.verify_claim(claim, context, method)
             results.append(verification)
-        
         print(f"\n📋 Verification Results:")
         for i, v in enumerate(results, 1):
             status = "✅ VERIFIED" if v.result else "❌ REJECTED"
@@ -3259,7 +2938,6 @@ class QuantumChat:
         # 総合判定
         avg_confidence = statistics.mean(v.confidence for v in results)
         verified_count = sum(1 for v in results if v.result)
-        
         print(f"\n🎯 Overall Assessment:")
         if verified_count == len(results) and avg_confidence > 0.7:
             print(f"   ✅ HIGHLY CREDIBLE ({avg_confidence:.0%} confidence)")
@@ -3267,7 +2945,6 @@ class QuantumChat:
             print(f"   ⚠️  PARTIALLY VERIFIED ({avg_confidence:.0%} confidence)")
         else:
             print(f"   ❌ NOT VERIFIED ({avg_confidence:.0%} confidence)")
-        
         print("=" * 80 + "\n")
     
     def _run_adversarial_test(self):
@@ -3275,13 +2952,10 @@ class QuantumChat:
         if not self.llm.adversarial_tester:
             print("❌ Adversarial testing disabled")
             return
-        
         if not self.history:
             print("❌ No conversation history. Start a conversation first.")
             return
-        
         last_query, last_response = self.history[-1]
-        
         print("\n" + "=" * 80)
         print("🎪 Running Adversarial Robustness Test")
         print("=" * 80)
@@ -3290,7 +2964,6 @@ class QuantumChat:
         
         # 敵対的クエリを生成
         adversarial_queries = self.llm.adversarial_tester.generate_adversarial_queries(last_query)
-        
         print(f"\n📋 Generated {len(adversarial_queries)} adversarial variants:")
         for i, adv_q in enumerate(adversarial_queries, 1):
             print(f"   {i}. {adv_q[:70]}...")
@@ -3306,18 +2979,15 @@ class QuantumChat:
                 # 類似度計算
                 orig_words = set(last_response.text.lower().split())
                 adv_words = set(adv_response.text.lower().split())
-                
                 if orig_words and adv_words:
                     similarity = len(orig_words & adv_words) / len(orig_words | adv_words)
                     consistency_scores.append(similarity)
                     print(f"✓ (consistency: {similarity:.2%})")
             except Exception as e:
                 print(f"✗ ({e})")
-        
         if consistency_scores:
             avg_consistency = statistics.mean(consistency_scores)
             min_consistency = min(consistency_scores)
-            
             print(f"\n📊 Test Results:")
             print(f"   Average Consistency: {avg_consistency:.2%}")
             print(f"   Minimum Consistency: {min_consistency:.2%}")
@@ -3328,7 +2998,6 @@ class QuantumChat:
                 print(f"\n   ⚠️  MODERATE - Some inconsistencies detected")
             else:
                 print(f"\n   ❌ VULNERABLE - Significant adversarial weakness")
-        
         print("=" * 80 + "\n")
     
     def _show_predictions(self):
@@ -3336,7 +3005,6 @@ class QuantumChat:
         if not self.llm.predictive_engine:
             print("❌ Predictive modeling disabled")
             return
-        
         print("\n" + "=" * 80)
         print("🔮 Predictive Analysis")
         print("=" * 80)
@@ -3344,7 +3012,6 @@ class QuantumChat:
         # 次の意図を予測
         predicted_intent = self.llm.predictive_engine.predict_next_intent()
         success_prob = self.llm.predictive_engine.get_success_probability(predicted_intent)
-        
         print(f"\n📍 Next Query Prediction:")
         print(f"   Predicted Intent: {predicted_intent.value}")
         print(f"   Success Probability: {success_prob:.1%}")
@@ -3357,7 +3024,6 @@ class QuantumChat:
                 key=lambda x: len(x[1]),
                 reverse=True
             )[:5]
-            
             for pattern, results in top_patterns:
                 avg_success = statistics.mean(results) if results else 0
                 print(f"   • {pattern}: {avg_success:.1%} success ({len(results)} samples)")
@@ -3371,7 +3037,6 @@ class QuantumChat:
             for intent, count in intent_dist.most_common():
                 bar = "█" * count + "░" * (10 - count)
                 print(f"   {intent.value:15s} [{bar}] {count}/10")
-        
         print("=" * 80 + "\n")
     
     def _apply_scientific_method(self, observation: str):
@@ -3379,32 +3044,27 @@ class QuantumChat:
         if not self.llm.scientific_method:
             print("❌ Scientific method disabled")
             return
-        
         print("\n" + "=" * 80)
         print("🔬 Scientific Method Application")
         print("=" * 80)
-        print(f"\nObservation: {observation}")
-        
+        print(f"\nObservation: {observation}")        
         # 1. 仮説を定式化
         print(f"\n1️⃣  Hypothesis Formulation:")
         hypothesis = self.llm.scientific_method.formulate_hypothesis(observation)
         print(f"   {hypothesis.statement}")
         print(f"   Prior Confidence: {hypothesis.bayesian_prior:.2%}")
-        
         # 2. 実験を設計
         print(f"\n2️⃣  Experiment Design:")
         experiment = self.llm.scientific_method.design_experiment(hypothesis)
         print(f"   Experiment ID: {experiment['id']}")
         print(f"   Method: {experiment['method']}")
         print(f"   Status: {experiment['status']}")
-        
         # 3. 予測
         print(f"\n3️⃣  Predictions:")
         print(f"   If the hypothesis is correct, we expect:")
         print(f"   • Measurable outcome related to the observation")
         print(f"   • Reproducible results under similar conditions")
         print(f"   • Consistency with existing knowledge")
-        
         # 4. 結果分析（シミュレート）
         print(f"\n4️⃣  Analysis:")
         analysis = self.llm.scientific_method.analyze_results(
@@ -3414,7 +3074,6 @@ class QuantumChat:
         print(f"   Statistical Significance: {analysis['statistical_significance']:.3f}")
         print(f"   Effect Size: {analysis['effect_size']:.3f}")
         print(f"   Conclusion: {analysis['conclusion']}")
-        
         # 5. ピアレビュー（シミュレート）
         print(f"\n5️⃣  Peer Review (Simulated):")
         mock_reviews = [
@@ -3424,7 +3083,6 @@ class QuantumChat:
         ]
         review_score = self.llm.scientific_method.peer_review(hypothesis, mock_reviews)
         print(f"   Peer Review Score: {review_score:.2%}")
-        
         # 最終評価
         print(f"\n🎯 Final Assessment:")
         if review_score > 0.7 and analysis['statistical_significance'] > 0.05:
@@ -3436,7 +3094,6 @@ class QuantumChat:
             print(f"   ⚠️  HYPOTHESIS REQUIRES MORE EVIDENCE")
             print(f"   • Additional data collection needed")
             print(f"   • Consider alternative explanations")
-        
         print("=" * 80 + "\n")
     
     def _show_learning_progress(self):
@@ -3444,15 +3101,12 @@ class QuantumChat:
         print("\n" + "=" * 80)
         print("📊 Learning Progress Analysis")
         print("=" * 80)
-        
         progress = self.llm.analyze_learning_progress()
-        
         if progress['status'] == 'insufficient_data':
             print("\n⚠️  Insufficient data for analysis.")
             print("   Continue using the system to unlock progress tracking.")
             print("=" * 80 + "\n")
             return
-        
         print(f"\n📈 Overall Metrics:")
         print(f"   Total Interactions: {progress['total_interactions']}")
         print(f"   Recent Quality: {progress['recent_quality']:.3f}")
@@ -3471,7 +3125,6 @@ class QuantumChat:
         if progress['best_strategy']:
             print(f"\n🎯 Strategy Performance:")
             print(f"   Best Strategy: {progress['best_strategy']}")
-            
             if 'strategy_performance' in progress:
                 print(f"\n   Detailed Performance:")
                 for strategy, score in sorted(
@@ -3494,7 +3147,6 @@ class QuantumChat:
         else:
             print(f"   • Try new strategies for diversity")
             print(f"   • Challenge with complex queries")
-        
         print("=" * 80 + "\n")
     
     def _show_meta_insights(self):
@@ -3502,22 +3154,18 @@ class QuantumChat:
         print("\n" + "=" * 80)
         print("🌟 Meta-Level Insights")
         print("=" * 80)
-        
         insights = self.llm.generate_meta_insights()
-        
         if not insights:
             print("\n⚠️  Insufficient data for meta-analysis.")
             print("   Continue interacting with the system.")
             print("=" * 80 + "\n")
             return
-        
         print(f"\n🔍 System has generated {len(insights)} insights:")
         for insight in insights:
             print(f"\n   {insight}")
         
-        # 追加の深い分析
+        # 追加の分析
         stats = self.llm.get_stats()
-        
         print(f"\n🧠 Deep Analysis:")
         
         # システム成熟度
@@ -3533,7 +3181,6 @@ class QuantumChat:
         else:
             maturity = "Expert"
             emoji = "🏆"
-        
         print(f"   System Maturity: {emoji} {maturity} ({stats['profile']['interactions']} interactions)")
         
         # 機能活用度
@@ -3555,7 +3202,6 @@ class QuantumChat:
                 print(f"   Prediction Accuracy: 📊 MODERATE ({accuracy:.1%})")
             else:
                 print(f"   Prediction Accuracy: 📉 LEARNING ({accuracy:.1%})")
-        
         print("=" * 80 + "\n")
     
     def _find_analogies(self, concept: str):
@@ -3563,18 +3209,14 @@ class QuantumChat:
         if not self.llm.creative_synthesizer:
             print("❌ Creative synthesis disabled")
             return
-        
         print("\n" + "=" * 80)
         print(f"🔍 Finding Analogies for: '{concept}'")
         print("=" * 80)
-        
         analogies = self.llm.creative_synthesizer.find_analogies(concept, top_k=10)
-        
         if not analogies:
             print("\n   No analogies found. The concept may be novel.")
             print("=" * 80 + "\n")
             return
-        
         print(f"\n📊 Similar Concepts (by semantic similarity):")
         for i, (related, similarity) in enumerate(analogies, 1):
             bar = "█" * int(similarity * 20) + "░" * (20 - int(similarity * 20))
@@ -3586,7 +3228,6 @@ class QuantumChat:
             print(f"\n💡 Suggested Synthesis:")
             print(f"   Try: /synthesize {concept} {top1}")
             print(f"   Or:  /synthesize {concept} {top2}")
-        
         print("=" * 80 + "\n")
     
     def _show_trust_score(self):
@@ -3594,13 +3235,10 @@ class QuantumChat:
         if not self.llm.verification_system:
             print("❌ Verification system disabled")
             return
-        
         print("\n" + "=" * 80)
         print("🔐 System Trust Score")
         print("=" * 80)
-        
         trust_score = self.llm.verification_system.get_trust_score()
-        
         print(f"\n📊 Overall Trust Score: {trust_score:.2%}")
         
         # ビジュアル表現
@@ -3620,7 +3258,6 @@ class QuantumChat:
         else:
             rating = "❌ LOW"
             desc = "System needs more calibration"
-        
         print(f"\n   Rating: {rating}")
         print(f"   {desc}")
         
@@ -3629,7 +3266,6 @@ class QuantumChat:
         if records:
             total = len(records)
             verified = sum(1 for r in records if r.result)
-            
             print(f"\n📋 Verification Statistics:")
             print(f"   Total Verifications: {total}")
             print(f"   Claims Verified: {verified} ({verified/total:.1%})")
@@ -3639,12 +3275,10 @@ class QuantumChat:
             method_stats = defaultdict(list)
             for r in records:
                 method_stats[r.method].append(r.confidence)
-            
             print(f"\n   By Method:")
             for method, confidences in method_stats.items():
                 avg_conf = statistics.mean(confidences)
                 print(f"   • {method.value:20s}: {avg_conf:.2%} avg confidence")
-        
         print("=" * 80 + "\n")
     
     # ========== 補助メソッド ==========
@@ -3653,7 +3287,6 @@ class QuantumChat:
         """データエクスポート"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filepath = f"export_{timestamp}.json"
-        
         export_data = {
             'session_id': self.session_id,
             'timestamp': timestamp,
@@ -3667,7 +3300,6 @@ class QuantumChat:
             'stats': self.llm.get_stats(),
             'profile': self.llm.profile
         }
-        
         try:
             with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump(export_data, f, ensure_ascii=False, indent=2)
@@ -3680,13 +3312,11 @@ class QuantumChat:
         print("\n" + "=" * 80)
         print("📊 Feedback History")
         print("=" * 80)
-        
         feedback_history = self.llm.profile.get('feedback_history', [])
         if not feedback_history:
             print("\nNo feedback recorded yet.")
             print("=" * 80 + "\n")
             return
-        
         recent = feedback_history[-10:]
         for i, fb in enumerate(recent, 1):
             rating = fb.get('rating', 0)
@@ -3694,7 +3324,6 @@ class QuantumChat:
             print(f"\n{i}. Rating: {rating:+d} {rating_str}")
             print(f"   Query: {fb.get('query', '')[:60]}...")
             print(f"   Time: {fb.get('timestamp', 'N/A')}")
-        
         avg_rating = statistics.mean(fb.get('rating', 0) for fb in feedback_history)
         print(f"\n📊 Average Rating: {avg_rating:+.2f}")
         print("=" * 80 + "\n")
@@ -3704,7 +3333,6 @@ class QuantumChat:
         print("\n" + "=" * 80)
         print("💡 Improvement Suggestions")
         print("=" * 80)
-        
         stats = self.llm.get_stats()
         suggestions = []
         
@@ -3729,13 +3357,10 @@ class QuantumChat:
             avg_reward = stats['rlhf']['avg_reward']
             if avg_reward < 0.5:
                 suggestions.append("• Rate responses to help the system learn your preferences")
-        
         if not suggestions:
-            suggestions.append("✅ System is performing optimally!")
-        
+            suggestions.append("ystem is performing optimally!")
         for suggestion in suggestions:
             print(f"\n{suggestion}")
-        
         print("\n" + "=" * 80 + "\n")
     
     def _show_quantum_info(self):
@@ -3743,7 +3368,6 @@ class QuantumChat:
         if not self.llm.quantum_optimizer:
             print("❌ Quantum optimization disabled")
             return
-        
         print("\n" + "=" * 80)
         print("🔮 Quantum Optimization Details")
         print("=" * 80)
@@ -3765,7 +3389,6 @@ class QuantumChat:
         if not self.llm.genetic_evolver:
             print("❌ Genetic evolution disabled")
             return
-        
         print("\n" + "=" * 80)
         print("🧬 Genetic Evolution Details")
         print("=" * 80)
@@ -3774,7 +3397,6 @@ class QuantumChat:
         print(f"   Population Size: {len(self.llm.genetic_evolver.population)}")
         print(f"   Mutation Rate: {self.llm.config.genetic.mutation_rate:.1%}")
         print(f"   Crossover Rate: {self.llm.config.genetic.crossover_rate:.1%}")
-        
         best_prompts = self.llm.genetic_evolver.get_best_prompts(5)
         if best_prompts:
             print(f"\n🏆 Top 5 Evolved Prompts:")
@@ -3783,7 +3405,6 @@ class QuantumChat:
                 print(f"\n   {i}. Fitness: [{fitness_bar}] {prompt.fitness:.3f}")
                 print(f"      Generation: {prompt.generation} | Mutations: {prompt.mutations}")
                 print(f"      Template: {prompt.template[:60]}...")
-        
         print("=" * 80 + "\n")
     
     def _show_swarm_info(self):
@@ -3791,7 +3412,6 @@ class QuantumChat:
         if not self.llm.swarm:
             print("❌ Swarm intelligence disabled")
             return
-        
         print("\n" + "=" * 80)
         print("🌊 Swarm Intelligence Details")
         print("=" * 80)
@@ -3800,16 +3420,13 @@ class QuantumChat:
         print(f"   Inertia Weight: {self.llm.config.swarm.inertia_weight}")
         print(f"   Cognitive Weight: {self.llm.config.swarm.cognitive_weight}")
         print(f"   Social Weight: {self.llm.config.swarm.social_weight}")
-        
         if self.llm.swarm.agents:
             print(f"\n🎭 Agent Personas:")
             for agent in self.llm.swarm.agents:
                 print(f"   • {agent.persona.value}: Fitness {agent.best_fitness:.3f}")
-        
         print(f"\n📊 Performance:")
         print(f"   Global Best Fitness: {self.llm.swarm.global_best_fitness:.3f}")
         print(f"   Total Optimizations: {self.llm.metrics['swarm_optimizations']}")
-        
         print("=" * 80 + "\n")
     
     def _show_rlhf_info(self):
@@ -3817,7 +3434,6 @@ class QuantumChat:
         if not self.llm.rlhf:
             print("❌ RLHF disabled")
             return
-        
         print("\n" + "=" * 80)
         print("🎯 Reinforcement Learning Details")
         print("=" * 80)
@@ -3827,7 +3443,6 @@ class QuantumChat:
         print(f"   Total Updates: {sum(self.llm.rlhf.state_visits.values())}")
         print(f"   Learning Rate: {self.llm.config.rlhf.learning_rate}")
         print(f"   Exploration Rate: {self.llm.config.rlhf.exploration_rate:.1%}")
-        
         if self.llm.rlhf.reward_history:
             avg_reward = statistics.mean(self.llm.rlhf.reward_history)
             recent_reward = statistics.mean(self.llm.rlhf.reward_history[-10:]) if len(self.llm.rlhf.reward_history) >= 10 else avg_reward
@@ -3842,7 +3457,6 @@ class QuantumChat:
             print(f"\n🎲 Current Policy (Top 5):")
             for i, (state, action) in enumerate(list(policy.items())[:5], 1):
                 print(f"   {i}. {state} → {action}")
-        
         print("=" * 80 + "\n")
     
     def _show_hypothesis_history(self):
@@ -3850,24 +3464,20 @@ class QuantumChat:
         if not self.llm.hypothesis_tester:
             print("❌ Hypothesis testing disabled")
             return
-        
         print("\n" + "=" * 80)
         print("🔬 Hypothesis Testing History")
         print("=" * 80)
-        
         hypotheses = self.llm.hypothesis_tester.hypotheses
         if not hypotheses:
             print("\nNo hypotheses generated yet.")
             print("=" * 80 + "\n")
             return
-        
         tested = [h for h in hypotheses if h.tested]
         print(f"\n📊 Summary:")
         print(f"   Total Hypotheses: {len(hypotheses)}")
         print(f"   Tested: {len(tested)}")
         print(f"   Confirmed: {sum(1 for h in tested if h.result)}")
         print(f"   Rejected: {sum(1 for h in tested if not h.result)}")
-        
         best = self.llm.hypothesis_tester.get_best_hypotheses(5)
         if best:
             print(f"\n🏆 Top Hypotheses (by confidence):")
@@ -3877,7 +3487,6 @@ class QuantumChat:
                 print(f"\n   {i}. [{conf_bar}] {h.confidence:.3f} - {status}")
                 print(f"      {h.statement[:70]}...")
                 print(f"      Evidence: {len(h.evidence)} | Counter: {len(h.counter_evidence)}")
-        
         print("=" * 80 + "\n")
     
     def _show_history(self):
@@ -3885,18 +3494,15 @@ class QuantumChat:
         print("\n" + "=" * 80)
         print("📜 Conversation History")
         print("=" * 80)
-        
         if not self.history:
             print("\nNo conversation history yet.")
             print("=" * 80 + "\n")
             return
-        
         recent = self.history[-10:]
         for i, (query, response) in enumerate(recent, 1):
             print(f"\n{i}. Q: {query[:60]}...")
             print(f"   A: {response.text[:60]}...")
             print(f"   Strategy: {response.strategy.value if response.strategy else 'N/A'} | Quality: {response.quality_score:.2f}")
-        
         print(f"\n📊 Total Conversations: {len(self.history)}")
         print("=" * 80 + "\n")
     
@@ -3905,7 +3511,6 @@ class QuantumChat:
         print("\n" + "=" * 80)
         print("👤 User Profile")
         print("=" * 80)
-        
         profile = self.llm.profile
         print(f"\n📊 Activity:")
         print(f"   Total Interactions: {profile['interaction_count']}")
@@ -3933,7 +3538,6 @@ class QuantumChat:
             sorted_strat = sorted(profile['strategy_preference'].items(), key=lambda x: x[1], reverse=True)
             for strategy, score in sorted_strat[:5]:
                 print(f"   • {strategy}: {score:.2f}")
-        
         print("=" * 80 + "\n")
     
     def _show_config(self):
@@ -3941,14 +3545,12 @@ class QuantumChat:
         print("\n" + "=" * 80)
         print("⚙️  System Configuration")
         print("=" * 80)
-        
         config = self.llm.config
         print(f"\n🔧 Basic Settings:")
         print(f"   Model: {config.model}")
         print(f"   Max Tokens: {config.max_tokens}")
         print(f"   Temperature: {config.temperature}")
         print(f"   Similarity Threshold: {config.similarity_threshold}")
-        
         print(f"\n🚀 Features:")
         print(f"   Adaptive: {'✅' if config.adaptive else '❌'}")
         print(f"   Vector DB: {'✅' if config.vec_db else '❌'}")
@@ -3958,7 +3560,6 @@ class QuantumChat:
         print(f"   Genetic Evolution: {'✅' if config.genetic.enabled else '❌'}")
         print(f"   Swarm Intelligence: {'✅' if config.swarm.enabled else '❌'}")
         print(f"   RLHF: {'✅' if config.rlhf.enabled else '❌'}")
-        
         print("=" * 80 + "\n")
     
     def _set_config(self, key: str, value: str):
@@ -3986,15 +3587,13 @@ class QuantumChat:
         print("\n" + "=" * 80)
         print("🔍 Text Analysis")
         print("=" * 80)
-        
         intent, complexity = self.llm._analyze_query(text)
-        
         print(f"\n📊 Analysis Results:")
         print(f"   Intent: {intent.value}")
         print(f"   Complexity: {complexity.value}")
         print(f"   Word Count: {len(text.split())}")
         print(f"   Character Count: {len(text)}")
-        
+
         # センチメント
         sentiment = sum(1 for w in ['good', 'great', 'excellent'] if w in text.lower()) - \
                    sum(1 for w in ['bad', 'terrible', 'awful'] if w in text.lower())
@@ -4004,7 +3603,6 @@ class QuantumChat:
         # 推奨戦略
         strategy = self.llm._select_strategy(intent, complexity)
         print(f"   Recommended Strategy: {strategy.value}")
-        
         print("=" * 80 + "\n")
     
     def _search_knowledge(self, query: str):
@@ -4012,24 +3610,19 @@ class QuantumChat:
         if not self.llm.knowledge_graph:
             print("❌ Knowledge graph disabled")
             return
-        
         print("\n" + "=" * 80)
         print(f"🔎 Searching Knowledge Graph: '{query}'")
         print("=" * 80)
-        
         subgraph = self.llm.knowledge_graph.query_subgraph(query, depth=2)
-        
         print(f"\n📊 Results:")
         print(f"   Nodes Found: {len(subgraph['nodes'])}")
         print(f"   Edges Found: {len(subgraph['edges'])}")
-        
         if subgraph['nodes']:
             print(f"\n🔗 Related Nodes:")
             for i, node in enumerate(subgraph['nodes'][:10], 1):
                 print(f"   {i}. {node.name} ({node.type}) - Relevance: {node.relevance_score:.2f}")
         else:
             print("\n   No matching nodes found.")
-        
         print("=" * 80 + "\n")
     
     def _show_topics(self):
@@ -4037,48 +3630,35 @@ class QuantumChat:
         print("\n" + "=" * 80)
         print("📚 Topic Distribution")
         print("=" * 80)
-        
         topics = sorted(self.llm.profile['topics'].items(), key=lambda x: x[1], reverse=True)
-        
         if not topics:
             print("\nNo topics recorded yet.")
             print("=" * 80 + "\n")
             return
-        
         total_score = sum(score for _, score in topics)
-        
         print(f"\n📊 Top 20 Topics:")
         for i, (topic, score) in enumerate(topics[:20], 1):
             percentage = (score / total_score * 100) if total_score > 0 else 0
             bar = "█" * int(percentage / 5) + "░" * (20 - int(percentage / 5))
             print(f"   {i:2d}. {topic:20s} [{bar}] {percentage:5.1f}%")
-        
         print(f"\n   Total Topics: {len(topics)}")
         
-
-            
     def run(self):
         """メインループ"""
         self.print_welcome()
-        
         while True:
             try:
                 query = input("👤 You: ").strip()
-                
                 if not query:
                     continue
-                
                 if query.startswith('/'):
                     if not self.handle_command(query):
                         break
                     continue
-                
                 print("\n⏳ Processing...")
                 response = self.llm.query(query)
-                
                 self.history.append((query, response))
                 self.print_response(response)
-            
             except KeyboardInterrupt:
                 print("\n\n⚠️  Interrupted. Type /exit to quit.")
                 continue
@@ -4089,13 +3669,11 @@ class QuantumChat:
                 print(f"\n❌ Error: {e}")
                 logger.error(f"Chat error: {e}")
 
-
 # ==================== メイン実行 ====================
 
 def main():
     """エントリーポイント"""
     import argparse
-    
     parser = argparse.ArgumentParser(
         description='Quantum-Enhanced Self-Evolving LLM System v3.0γ'
     )
@@ -4107,9 +3685,7 @@ def main():
     parser.add_argument('--query', type=str, help='Single query mode')
     parser.add_argument('--load', type=str, help='Load state')
     parser.add_argument('--debug', action='store_true', help='Debug mode')
-    
     args = parser.parse_args()
-    
     if args.debug:
         logger.logger.setLevel(logging.DEBUG)
     
@@ -4147,13 +3723,11 @@ def main():
         # 終了時保存
         print("\n💾 Saving session...")
         llm.save_state()
-        
         stats = llm.get_stats()
         print("\n📊 Session Summary:")
         print(f"   Queries: {stats['system']['queries']}")
         print(f"   Success Rate: {stats['system']['success_rate']}")
         print(f"   Total Cost: {stats['system']['total_cost']}")
-    
     except ValueError as e:
         print(f"\n❌ Error: {e}")
         print("Please set GROQ_API_KEY environment variable")
@@ -4162,7 +3736,6 @@ def main():
         print(f"\n❌ Fatal error: {e}")
         logger.error(f"Fatal: {e}")
         sys.exit(1)
-
 
 if __name__ == '__main__':
     main()
