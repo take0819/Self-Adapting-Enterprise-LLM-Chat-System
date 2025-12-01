@@ -1083,17 +1083,14 @@ class CreativeSynthesizer:
         # コンセプト埋め込み（簡易版）
         emb_a = self._embed_concept(concept_a)
         emb_b = self._embed_concept(concept_b)
-        
         # 統合ベクトル
         synthesis_vec = (emb_a + emb_b) / 2
-        
         # 新規性スコア（元の概念との距離）
         novelty = (
             np.linalg.norm(synthesis_vec - emb_a) +
             np.linalg.norm(synthesis_vec - emb_b)
         ) / 2
         novelty = min(1.0, novelty / 5)
-        
         # 統合アイデア生成（簡易版）
         synthesis_text = f"A fusion of {concept_a} and {concept_b}, creating a hybrid that combines the best of both"
         synthesis = CreativeSynthesis(
@@ -1112,7 +1109,6 @@ class CreativeSynthesizer:
         """概念を埋め込み空間にマップ"""
         if concept in self.concept_space:
             return self.concept_space[concept]
-        
         # ハッシュベース埋め込み
         hash_val = int(hashlib.md5(concept.encode()).hexdigest(), 16)
         rng = np.random.RandomState(hash_val % (2**32))
@@ -1151,7 +1147,6 @@ class PredictiveQueryEngine:
             'success': success,
             'timestamp': datetime.now()
         })
-        
         # パターン更新
         hour = datetime.now().hour
         day = datetime.now().weekday()
@@ -1175,7 +1170,6 @@ class PredictiveQueryEngine:
         hour = datetime.now().hour
         day = datetime.now().weekday()
         pattern_key = f"{intent.value}_{hour}_{day}"
-        
         if pattern_key in self.model.user_patterns:
             results = self.model.user_patterns[pattern_key]
             if results:
@@ -1244,7 +1238,6 @@ class ScientificMethodEngine:
             review_lower = review.lower()
             pos_count = sum(1 for w in positive_words if w in review_lower)
             neg_count = sum(1 for w in negative_words if w in review_lower)
-            
             score = (pos_count - neg_count + 3) / 6  # 正規化
             scores.append(max(0, min(1, score)))
         return statistics.mean(scores) if scores else 0.5
@@ -1285,7 +1278,6 @@ class AdvancedKnowledgeGraph:
         """コミュニティ検出（簡易版）"""
         if not self.nodes:
             return {}
-        
         # 連結成分の検出
         visited = set()
         communities = {}
@@ -1318,7 +1310,6 @@ class AdvancedKnowledgeGraph:
         """クエリに関連するサブグラフを取得"""
         # クエリからエンティティを抽出
         query_words = set(re.findall(r'\b\w+\b', query.lower()))
-        
         # 関連ノードを検索
         relevant_nodes = []
         for node_id, node in self.nodes.items():
@@ -1329,7 +1320,6 @@ class AdvancedKnowledgeGraph:
                 relevant_nodes.append(node_id)
         if not relevant_nodes:
             return {'nodes': [], 'edges': []}
-        
         # サブグラフを展開
         subgraph_nodes = set(relevant_nodes)
         for _ in range(depth):
@@ -1357,35 +1347,28 @@ class QuantumLLM:
         'llama-3.1-70b-versatile': {'cost': 'medium', 'quality': 'high', 'speed': 'medium'},
         'llama-3.3-70b-versatile': {'cost': 'medium', 'quality': 'high', 'speed': 'medium'},
     }
-    
+
     def __init__(self, api_key: Optional[str] = None, config: Optional[SystemConfig] = None):
         self.api_key = api_key or os.environ.get('GROQ_API_KEY')
         if not self.api_key:
             raise ValueError("❌ GROQ_API_KEY required")
         self.config = config or SystemConfig()
         self.client = Groq(api_key=self.api_key)
-        
         # コアコンポーネント
         self.vector_db = VectorDB(self.config.vec_dim) if self.config.vec_db else None
         self.knowledge_graph = AdvancedKnowledgeGraph() if self.config.knowledge_graph else None
-        
-        # 高度なコンポーネント
         self.quantum_optimizer = QuantumOptimizer(self.config.quantum) if self.config.quantum.enabled else None
         self.genetic_evolver = GeneticPromptEvolver(self.config.genetic) if self.config.genetic.enabled else None
         self.swarm = SwarmIntelligence(self.config.swarm) if self.config.swarm.enabled else None
         self.rlhf = RLHFTrainer(self.config.rlhf) if self.config.rlhf.enabled else None
-        
-        # 究極のコンポーネント
         self.causal_engine = CausalInferenceEngine() if self.config.causal_reasoning else None
         self.adversarial_tester = AdversarialTester() if self.config.adversarial_testing else None
         self.verification_system = VerificationSystem() if self.config.verification_system else None
         self.creative_synthesizer = CreativeSynthesizer() if self.config.creative_synthesis else None
         self.predictive_engine = PredictiveQueryEngine() if self.config.predictive_modeling else None
         self.scientific_method = ScientificMethodEngine() if self.config.scientific_method else None
-        
         # ユーザープロファイル
         self.profile = self._init_profile()
-        
         # メトリクス
         self.metrics = {
             'queries': 0,
@@ -1404,10 +1387,8 @@ class QuantumLLM:
             'predictions': 0,
             'scientific_experiments': 0
         }
-        
         # コンテキスト
         self.context_window = deque(maxlen=20)
-        
         # プロンプト集団の初期化
         if self.genetic_evolver:
             base_prompts = [
@@ -1467,7 +1448,6 @@ class QuantumLLM:
                 predicted_intent = self.predictive_engine.predict_next_intent()
                 logger.debug(f"🔮 Predicted intent: {predicted_intent.value}")
                 self.metrics['predictions'] += 1
-            
             # キャッシュチェック
             if self.vector_db:
                 cached_results = self.vector_db.search(query, top_k=1, min_similarity=self.config.similarity_threshold)
@@ -1484,18 +1464,15 @@ class QuantumLLM:
                             similarity=similarity,
                             **{k: v for k, v in resp_data.items() if k not in ['text', 'confidence']}
                         )
-            
             # クエリ分析
             intent, complexity = self._analyze_query(query)
             strategy = self._select_strategy(intent, complexity)
             model = kwargs.get('model', self.config.model)
-            
             # 科学的手法の適用
             if self.scientific_method and complexity >= Complexity.RESEARCH:
                 hypothesis = self.scientific_method.formulate_hypothesis(query)
                 logger.info(f"🔬 Hypothesis formulated: {hypothesis.statement[:50]}...")
                 self.metrics['scientific_experiments'] += 1
-            
             # 戦略実行
             if strategy == Strategy.QUANTUM and self.quantum_optimizer:
                 response = await self._execute_quantum_strategy(query, model, intent, complexity)
@@ -1505,11 +1482,9 @@ class QuantumLLM:
                 response = await self._execute_swarm_strategy(query, model, intent, complexity)
             else:
                 response = await self._execute_direct(query, model, intent, complexity)
-            
             # メタデータ設定
             response.intent = intent
             response.complexity = complexity
-            
             # 因果推論の適用
             if self.causal_engine and 'why' in query.lower():
                 causes = self.causal_engine.infer_cause(query, depth=2)
@@ -1517,7 +1492,6 @@ class QuantumLLM:
                     logger.info(f"🧩 Causal inference: {len(causes)} potential causes identified")
                     self.metrics['causal_inferences'] += 1
                     response.reasoning_steps.extend([f"Cause: {c[0]} (p={c[1]:.2f})" for c in causes[:3]])
-            
             # 検証
             if self.verification_system:
                 verification = self.verification_system.verify_claim(
@@ -1528,7 +1502,6 @@ class QuantumLLM:
                 response.confidence = response.confidence * verification.confidence
                 self.metrics['verifications'] += 1
                 logger.debug(f"🔐 Verification: {verification.confidence:.2f}")
-            
             # 敵対的テスト（オプション）
             if self.adversarial_tester and self.config.adversarial_testing and np.random.random() < 0.1:
                 adversarial_test = await self.adversarial_tester.test_consistency(
@@ -1540,27 +1513,22 @@ class QuantumLLM:
                 if adversarial_test.vulnerability_detected:
                     logger.warning(f"🎪 Adversarial vulnerability detected! Consistency: {adversarial_test.consistency_score:.2f}")
                     response.uncertainty += 0.1
-            
             # メトリクス更新
             if response.success:
                 self.metrics['success'] += 1
             self.metrics['total_cost'] += response.cost
             self.metrics['total_tokens'] += response.tokens
-            
             # RLHF更新
             if self.rlhf:
                 state = self.rlhf.get_state(intent, complexity)
                 reward = response.quality_score
                 next_state = state
                 self.rlhf.update(state, strategy.value, reward, next_state)
-            
             # 予測エンジン更新
             if self.predictive_engine:
                 self.predictive_engine.add_query(query, intent, response.success)
-            
             # コンテキスト更新
             self.context_window.append(query[:100])
-            
             # キャッシュ保存
             if self.vector_db and response.success:
                 self.vector_db.add(
@@ -1568,11 +1536,9 @@ class QuantumLLM:
                     query,
                     {'response': response.to_dict()}
                 )
-            
             # 知識グラフ更新
             if self.knowledge_graph:
                 self._update_knowledge_graph(query, response.text)
-            
             # リアルタイム学習
             if self.config.real_time_learning:
                 self._update_learning_trajectory(query, response)
@@ -1594,7 +1560,6 @@ class QuantumLLM:
             'complexity': response.complexity.value if response.complexity else None,
             'timestamp': datetime.now().isoformat()
         })
-        
         # 最新1000件のみ保持
         if len(self.profile['learning_trajectory']) > 1000:
             self.profile['learning_trajectory'] = self.profile['learning_trajectory'][-1000:]
@@ -1631,7 +1596,6 @@ class QuantumLLM:
                 'prediction_accuracy': self.profile.get('prediction_accuracy', 0.5)
             }
         }
-        
         # 知識グラフ統計
         if self.knowledge_graph:
             stats['knowledge_graph'] = {
@@ -1639,7 +1603,6 @@ class QuantumLLM:
                 'edges': len(self.knowledge_graph.edges),
                 'communities': len(self.knowledge_graph.communities)
             }
-        
         # 遺伝的進化統計
         if self.genetic_evolver:
             best_prompts = self.genetic_evolver.get_best_prompts(3)
@@ -1648,7 +1611,6 @@ class QuantumLLM:
                 'population_size': len(self.genetic_evolver.population),
                 'best_fitness': best_prompts[0].fitness if best_prompts else 0
             }
-        
         # RLHF統計
         if self.rlhf:
             stats['rlhf'] = {
@@ -1656,14 +1618,12 @@ class QuantumLLM:
                 'total_updates': sum(self.rlhf.state_visits.values()),
                 'avg_reward': statistics.mean(self.rlhf.reward_history) if self.rlhf.reward_history else 0
             }
-        
         # 因果推論統計
         if self.causal_engine:
             stats['causal'] = {
                 'causal_nodes': len(self.causal_engine.causal_graph),
                 'interventions': len(self.causal_engine.interventions)
             }
-        
         # 敵対的テスト統計
         if self.adversarial_tester:
             stats['adversarial'] = {
@@ -1673,7 +1633,6 @@ class QuantumLLM:
                     t.consistency_score for t in self.adversarial_tester.tests
                 ) if self.adversarial_tester.tests else 0
             }
-        
         # 検証システム統計
         if self.verification_system:
             stats['verification'] = {
@@ -1681,7 +1640,6 @@ class QuantumLLM:
                 'trust_score': self.verification_system.get_trust_score(),
                 'verified_claims': sum(1 for r in self.verification_system.records if r.result)
             }
-        
         # 創造的統合統計
         if self.creative_synthesizer:
             stats['creative'] = {
@@ -1697,14 +1655,12 @@ class QuantumLLM:
         trajectory = self.profile.get('learning_trajectory', [])
         if len(trajectory) < 10:
             return {'status': 'insufficient_data'}
-        
         # 時系列分析
         recent = trajectory[-50:]
         older = trajectory[-100:-50] if len(trajectory) >= 100 else trajectory[:-50]
         recent_quality = statistics.mean(t['quality'] for t in recent)
         older_quality = statistics.mean(t['quality'] for t in older) if older else recent_quality
         improvement = recent_quality - older_quality
-        
         # 戦略効果分析
         strategy_performance = defaultdict(list)
         for t in trajectory:
@@ -1729,7 +1685,6 @@ class QuantumLLM:
     def generate_meta_insights(self) -> List[str]:
         """メタインサイトを生成"""
         insights = []
-        
         # 学習進捗インサイト
         progress = self.analyze_learning_progress()
         if progress['status'] == 'analyzed':
@@ -1739,10 +1694,8 @@ class QuantumLLM:
                 insights.append(f"📉 Learning trend: Needs attention ({progress['improvement']:.3f})")
             if progress['best_strategy']:
                 insights.append(f"🎯 Most effective strategy: {progress['best_strategy']}")
-        
         # システムパフォーマンスインサイト
         stats = self.get_stats()
-        
         if 'ultimate' in stats:
             ultimate = stats['ultimate']
             if ultimate['adversarial_tests'] > 10:
@@ -1757,13 +1710,11 @@ class QuantumLLM:
                     trust = stats['verification']['trust_score']
                     if trust > 0.8:
                         insights.append(f"🔐 High trust score ({trust:.2f})")
-        
         # 予測精度
         if self.predictive_engine and len(self.predictive_engine.query_history) > 20:
             accuracy = self.profile.get('prediction_accuracy', 0.5)
             if accuracy > 0.7:
                 insights.append(f"🔮 Prediction system learning well ({accuracy:.2%})")
-        
         # 知識グラフ成長
         if self.knowledge_graph and len(self.knowledge_graph.nodes) > 100:
             growth_rate = len(self.knowledge_graph.nodes) / max(self.metrics['queries'], 1)
@@ -1773,7 +1724,6 @@ class QuantumLLM:
     def _analyze_query(self, query: str) -> Tuple[Intent, Complexity]:
         """クエリを分析"""
         q = query.lower()
-        
         # 意図分析
         intent_patterns = {
             Intent.REASONING: ['why', 'because', 'reason', 'cause'],
@@ -1792,7 +1742,6 @@ class QuantumLLM:
             if matches > max_matches:
                 max_matches = matches
                 intent = int_type
-        
         # 複雑度分析
         complexity_score = 0
         complexity_score += len(query) // 100
@@ -1824,27 +1773,21 @@ class QuantumLLM:
         # フロンティアレベル: 量子最適化
         if complexity == Complexity.FRONTIER and self.config.quantum.enabled:
             return Strategy.QUANTUM
-        
         # 研究レベル: 遺伝的進化
         if complexity == Complexity.RESEARCH and self.config.genetic.enabled:
             return Strategy.GENETIC
-        
         # 複雑な推論: 群知能
         if complexity in [Complexity.EXPERT, Complexity.COMPLEX] and self.config.swarm.enabled:
             return Strategy.SWARM
-        
         # 分析・推論: Tree of Thoughts
         if intent in [Intent.ANALYSIS, Intent.REASONING] and self.config.tree_of_thoughts:
             return Strategy.TREE_SEARCH
-        
         # 討論が有効な場合
         if complexity in [Complexity.EXPERT, Complexity.RESEARCH] and self.config.debate_mode:
             return Strategy.DEBATE
-        
         # Chain of Thought
         if complexity >= Complexity.COMPLEX and self.config.chain_of_thought:
             return Strategy.COT
-        
         # RLHF推奨がある場合
         if self.rlhf:
             state = self.rlhf.get_state(intent, complexity)
@@ -1888,7 +1831,6 @@ class QuantumLLM:
     ) -> str:
         """システムプロンプト構築"""
         base = "You are an advanced AI assistant with quantum-inspired reasoning capabilities."
-        
         # 戦略別の指示
         strategy_instructions = {
             Strategy.QUANTUM: "Use multi-dimensional thinking. Explore superposition of possibilities.",
@@ -1899,7 +1841,6 @@ class QuantumLLM:
             Strategy.TREE_SEARCH: "Explore different reasoning paths systematically."
         }
         strategy_text = strategy_instructions.get(strategy, "")
-        
         # 複雑度別の調整
         if complexity in [Complexity.RESEARCH, Complexity.FRONTIER]:
             complexity_text = "Provide research-grade analysis with novel insights."
@@ -1907,7 +1848,6 @@ class QuantumLLM:
             complexity_text = "Provide expert-level insights with technical depth."
         else:
             complexity_text = "Provide clear, well-structured answers."
-        
         # 知識グラフからのコンテキスト
         kg_context = ""
         if self.knowledge_graph:
@@ -1928,14 +1868,12 @@ class QuantumLLM:
         """量子インスパイア戦略"""
         logger.info("🔮 Executing quantum-inspired optimization")
         self.metrics['quantum_optimizations'] += 1
-        
         # パラメータ空間を量子最適化
         def objective(params):
             temp, top_p, freq_penalty = params[0], params[1], params[2]
             # 簡易評価関数（実際は応答品質で評価）
             score = 1.0 - abs(temp - 0.7) - abs(top_p - 0.9) - abs(freq_penalty - 0.1)
             return score
-        
         optimized_params, _ = self.quantum_optimizer.optimize_parameters(objective)
         temperature = float(optimized_params[0])
         system_prompt = self._build_system_prompt(query, intent, complexity, Strategy.QUANTUM)
@@ -1964,7 +1902,6 @@ class QuantumLLM:
         """遺伝的進化戦略"""
         logger.info("🧬 Executing genetic evolution")
         self.metrics['genetic_evolutions'] += 1
-        
         # プロンプトを進化させる
         def fitness_func(prompt: Prompt):
             # 簡易評価（実際は応答品質で評価）
@@ -1998,7 +1935,6 @@ class QuantumLLM:
         """群知能戦略"""
         logger.info("🌊 Executing swarm intelligence")
         self.metrics['swarm_optimizations'] += 1
-        
         # 各ペルソナからの応答を収集
         personas = [PersonaType.OPTIMIST, PersonaType.PESSIMIST, PersonaType.PRAGMATIST]
         responses = []
@@ -2024,10 +1960,8 @@ class QuantumLLM:
             except Exception as e:
                 logger.warning(f"Swarm agent {persona.value} failed: {e}")
         if not responses:
-            
             # フォールバック
             return await self._execute_direct(query, model, intent, complexity)
-            
         # コンセンサス合成
         synthesis_prompt = f"Synthesize these perspectives:\n\n"
         for resp in responses:
@@ -2084,14 +2018,12 @@ class QuantumLLM:
         text = choice.message.content or ""
         usage = api_response.usage
         cost = self._calculate_cost(model, usage.prompt_tokens, usage.completion_tokens)
-        
         # 品質スコア計算
         coherence = min(1.0, len(text.split('.')) / 10)
         relevance = 0.8
         completeness = min(1.0, len(text) / 500)
         factuality = 0.85
         novelty = 0.7 if strategy in [Strategy.QUANTUM, Strategy.GENETIC] else 0.5
-        
         # 信頼度計算
         base_confidence = 0.9 if choice.finish_reason == "stop" else 0.75
         uncertainty = sum(0.1 for phrase in ['maybe', 'perhaps', 'possibly'] if phrase in text.lower())
@@ -2145,12 +2077,10 @@ class QuantumLLM:
                             similarity=similarity,
                             **{k: v for k, v in resp_data.items() if k not in ['text', 'confidence']}
                         )
-            
             # クエリ分析
             intent, complexity = self._analyze_query(query)
             strategy = self._select_strategy(intent, complexity)
             model = kwargs.get('model', self.config.model)
-            
             # 戦略実行
             if strategy == Strategy.QUANTUM and self.quantum_optimizer:
                 response = await self._execute_quantum_strategy(query, model, intent, complexity)
@@ -2160,27 +2090,22 @@ class QuantumLLM:
                 response = await self._execute_swarm_strategy(query, model, intent, complexity)
             else:
                 response = await self._execute_direct(query, model, intent, complexity)
-            
             # メタデータ設定
             response.intent = intent
             response.complexity = complexity
-            
             # メトリクス更新
             if response.success:
                 self.metrics['success'] += 1
             self.metrics['total_cost'] += response.cost
             self.metrics['total_tokens'] += response.tokens
-            
             # RLHF更新
             if self.rlhf:
                 state = self.rlhf.get_state(intent, complexity)
                 reward = response.quality_score
                 next_state = state  # 簡易版
                 self.rlhf.update(state, strategy.value, reward, next_state)
-            
             # コンテキスト更新
             self.context_window.append(query[:100])
-            
             # キャッシュ保存
             if self.vector_db and response.success:
                 self.vector_db.add(
@@ -2188,7 +2113,6 @@ class QuantumLLM:
                     query,
                     {'response': response.to_dict()}
                 )
-            
             # 知識グラフ更新
             if self.knowledge_graph:
                 self._update_knowledge_graph(query, response.text)
@@ -2218,12 +2142,10 @@ class QuantumLLM:
                 properties={'source': 'response'}
             )
             self.knowledge_graph.add_node(node)
-        
         # 関係抽出（隣接エンティティ間）
         for i in range(len(entities) - 1):
             source_id = hashlib.md5(entities[i].encode()).hexdigest()[:8]
             target_id = hashlib.md5(entities[i + 1].encode()).hexdigest()[:8]
-            
             if source_id in self.knowledge_graph.nodes and target_id in self.knowledge_graph.nodes:
                 edge = KnowledgeEdge(
                     source=source_id,
@@ -2242,19 +2164,16 @@ class QuantumLLM:
             'rating': rating,
             'timestamp': datetime.now().isoformat()
         })
-        
         # トピック更新
         words = re.findall(r'\b\w{4,}\b', query.lower())
         for word in words:
             self.profile['topics'][word] += rating
             if rating > 0:
                 self.profile['expertise'][word] = min(1.0, self.profile['expertise'][word] + 0.1)
-        
         # 戦略好み更新
         if response_obj and response_obj.strategy:
             current = self.profile['strategy_preference'][response_obj.strategy.value]
             self.profile['strategy_preference'][response_obj.strategy.value] = current + rating * 0.1
-        
         # 遺伝的プロンプト更新
         if self.genetic_evolver and response_obj:
             for prompt in self.genetic_evolver.population:
@@ -2287,7 +2206,6 @@ class QuantumLLM:
                 'expertise_areas': len([e for e in self.profile['expertise'].values() if e > 0.5])
             }
         }
-        
         # 知識グラフ統計
         if self.knowledge_graph:
             stats['knowledge_graph'] = {
@@ -2295,7 +2213,6 @@ class QuantumLLM:
                 'edges': len(self.knowledge_graph.edges),
                 'communities': len(self.knowledge_graph.communities)
             }
-        
         # 遺伝的進化統計
         if self.genetic_evolver:
             best_prompts = self.genetic_evolver.get_best_prompts(3)
@@ -2304,7 +2221,6 @@ class QuantumLLM:
                 'population_size': len(self.genetic_evolver.population),
                 'best_fitness': best_prompts[0].fitness if best_prompts else 0
             }
-        
         # RLHF統計
         if self.rlhf:
             stats['rlhf'] = {
@@ -2430,7 +2346,6 @@ class QuantumChat:
         print("─" * 80)
         print(response.text)
         print("─" * 80)
-        
         # メタデータ
         metadata = []
         if response.strategy:
@@ -2459,7 +2374,6 @@ class QuantumChat:
         if response.cached:
             metadata.append(f"💾Cache")
         print(" | ".join(metadata))
-        
         # 追加情報
         if response.personas_involved:
             print(f"\n🎭 Personas: {', '.join(response.personas_involved)}")
@@ -2475,22 +2389,18 @@ class QuantumChat:
         print("\n" + "=" * 80)
         print("📊 System Statistics")
         print("=" * 80)
-        
         # システム統計
         sys = stats['system']
         print(f"\n📈 System:")
         print(f"   Queries: {sys['queries']} | Success Rate: {sys['success_rate']}")
         print(f"   Cache Hit Rate: {sys['cache_hit_rate']}")
         print(f"   Total Cost: {sys['total_cost']} | Avg: {sys['avg_cost']}")
-        
-        # 高度な機能
-        adv = stats['advanced']
+                adv = stats['advanced']
         print(f"\n🚀 Advanced Features:")
         print(f"   🔮 Quantum Optimizations: {adv['quantum_optimizations']}")
         print(f"   🧬 Genetic Evolutions: {adv['genetic_evolutions']}")
         print(f"   🌊 Swarm Optimizations: {adv['swarm_optimizations']}")
         print(f"   🔬 Hypotheses Tested: {adv['hypotheses_tested']}")
-        
         # プロファイル
         prof = stats['profile']
         print(f"\n👤 Profile:")
@@ -2498,20 +2408,17 @@ class QuantumChat:
         print(f"   Expertise Areas: {prof['expertise_areas']}")
         if prof['top_topics']:
             print(f"   Top Topics: {', '.join([t[0] for t in prof['top_topics'][:3]])}")
-        
         # 知識グラフ
         if 'knowledge_graph' in stats:
             kg = stats['knowledge_graph']
             print(f"\n🧩 Knowledge Graph:")
             print(f"   Nodes: {kg['nodes']} | Edges: {kg['edges']} | Communities: {kg['communities']}")
-        
         # 遺伝的進化
         if 'genetic' in stats:
             gen = stats['genetic']
             print(f"\n🧬 Genetic Evolution:")
             print(f"   Generation: {gen['generation']} | Population: {gen['population_size']}")
             print(f"   Best Fitness: {gen['best_fitness']:.3f}")
-        
         # RLHF
         if 'rlhf' in stats:
             rl = stats['rlhf']
@@ -2529,7 +2436,6 @@ class QuantumChat:
         print("\n" + "=" * 80)
         print(f"🧩 Causal Analysis: '{event}'")
         print("=" * 80)
-        
         # 原因を推論
         causes = self.llm.causal_engine.infer_cause(event, depth=3)
         if causes:
@@ -2539,7 +2445,6 @@ class QuantumChat:
                 print(f"   {i:2d}. [{bar}] {prob:.2%} - {cause}")
         else:
             print("\n   No causal relationships found in knowledge base.")
-        
         # 結果を予測
         effects = self.llm.causal_engine.predict_effect(event, depth=3)
         if effects:
@@ -2606,7 +2511,6 @@ class QuantumChat:
                 print(f"⭐ Rated: {rating}/5 stars")
             except ValueError:
                 print("❌ Invalid rating")
-        
         elif cmd == '/review':
             self._show_feedback_history()
         elif cmd == '/improve':
@@ -2729,7 +2633,6 @@ class QuantumChat:
         print("\n" + "=" * 80)
         print(f"🧩 Causal Analysis: '{event}'")
         print("=" * 80)
-        
         # 原因を推論
         causes = self.llm.causal_engine.infer_cause(event, depth=3)
         if causes:
@@ -2739,7 +2642,6 @@ class QuantumChat:
                 print(f"   {i:2d}. [{bar}] {prob:.2%} - {cause}")
         else:
             print("\n   No causal relationships found in knowledge base.")
-        
         # 結果を予測
         effects = self.llm.causal_engine.predict_effect(event, depth=3)
         if effects:
@@ -2747,7 +2649,6 @@ class QuantumChat:
             for i, (effect, prob) in enumerate(effects, 1):
                 bar = "█" * int(prob * 30) + "░" * (30 - int(prob * 30))
                 print(f"   {i:2d}. [{bar}] {prob:.2%} - {effect}")
-        
         # 介入シミュレーション
         print(f"\n💡 Intervention Simulation:")
         print(f"   If we intervene on '{event[:40]}...', we can expect:")
@@ -2804,7 +2705,6 @@ class QuantumChat:
                 if rating < 1 or rating > 5:
                     print("❌ Rating must be between 1 and 5")
                     return True
-                
                 # 5段階を-2~+2に変換
                 converted = rating - 3
                 last_query, last_response = self.history[-1]
@@ -2876,7 +2776,6 @@ class QuantumChat:
                 self._compare_strategies(query)
         elif cmd == '/benchmark':
             self._run_benchmark()
-            
         # 介入シミュレーション
         print(f"\n💡 Intervention Simulation:")
         print(f"   If we intervene on '{event[:40]}...', we can expect:")
@@ -2914,7 +2813,6 @@ class QuantumChat:
         print(f"🔐 Claim Verification")
         print("=" * 80)
         print(f"\nClaim: {claim}")
-        
         # 複数の検証方法を適用
         methods = [
             VerificationMethod.LOGICAL_CONSISTENCY,
@@ -2934,7 +2832,6 @@ class QuantumChat:
             print(f"      Confidence: [{conf_bar}] {v.confidence:.2%}")
             if v.evidence:
                 print(f"      Evidence: {', '.join(v.evidence[:2])}")
-        
         # 総合判定
         avg_confidence = statistics.mean(v.confidence for v in results)
         verified_count = sum(1 for v in results if v.result)
@@ -2961,13 +2858,11 @@ class QuantumChat:
         print("=" * 80)
         print(f"\nOriginal Query: {last_query[:60]}...")
         print("\n⏳ Generating adversarial examples and testing...")
-        
         # 敵対的クエリを生成
         adversarial_queries = self.llm.adversarial_tester.generate_adversarial_queries(last_query)
         print(f"\n📋 Generated {len(adversarial_queries)} adversarial variants:")
         for i, adv_q in enumerate(adversarial_queries, 1):
             print(f"   {i}. {adv_q[:70]}...")
-        
         # 一貫性スコアを計算（簡易版）
         consistency_scores = []
         for adv_q in adversarial_queries[:3]:  # 最初の3つのみテスト
@@ -2975,7 +2870,6 @@ class QuantumChat:
                 print(f"\n   Testing variant {len(consistency_scores) + 1}...", end=" ", flush=True)
                 # 実際には非同期で実行すべきだが、簡易版として同期実行
                 adv_response = self.llm.query(adv_q)
-                
                 # 類似度計算
                 orig_words = set(last_response.text.lower().split())
                 adv_words = set(adv_response.text.lower().split())
@@ -3008,14 +2902,12 @@ class QuantumChat:
         print("\n" + "=" * 80)
         print("🔮 Predictive Analysis")
         print("=" * 80)
-        
         # 次の意図を予測
         predicted_intent = self.llm.predictive_engine.predict_next_intent()
         success_prob = self.llm.predictive_engine.get_success_probability(predicted_intent)
         print(f"\n📍 Next Query Prediction:")
         print(f"   Predicted Intent: {predicted_intent.value}")
         print(f"   Success Probability: {success_prob:.1%}")
-        
         # 使用パターン
         if self.llm.predictive_engine.model.user_patterns:
             print(f"\n📊 Usage Patterns Detected:")
@@ -3027,7 +2919,6 @@ class QuantumChat:
             for pattern, results in top_patterns:
                 avg_success = statistics.mean(results) if results else 0
                 print(f"   • {pattern}: {avg_success:.1%} success ({len(results)} samples)")
-        
         # クエリ履歴分析
         if len(self.llm.predictive_engine.query_history) >= 10:
             recent = list(self.llm.predictive_engine.query_history)[-10:]
@@ -3111,7 +3002,6 @@ class QuantumChat:
         print(f"   Total Interactions: {progress['total_interactions']}")
         print(f"   Recent Quality: {progress['recent_quality']:.3f}")
         print(f"   Improvement: {progress['improvement']:+.3f}")
-        
         # トレンドビジュアライゼーション
         trend = progress['trend']
         if trend == 'improving':
@@ -3120,7 +3010,6 @@ class QuantumChat:
             print(f"   Trend: 📉 DECLINING")
         else:
             print(f"   Trend: ➡️  STABLE")
-        
         # 戦略パフォーマンス
         if progress['best_strategy']:
             print(f"\n🎯 Strategy Performance:")
@@ -3134,7 +3023,6 @@ class QuantumChat:
                 ):
                     bar = "█" * int(score * 20) + "░" * (20 - int(score * 20))
                     print(f"   • {strategy:20s} [{bar}] {score:.3f}")
-        
         # 推奨事項
         print(f"\n💡 Recommendations:")
         if trend == 'improving':
@@ -3163,11 +3051,9 @@ class QuantumChat:
         print(f"\n🔍 System has generated {len(insights)} insights:")
         for insight in insights:
             print(f"\n   {insight}")
-        
         # 追加の分析
         stats = self.llm.get_stats()
         print(f"\n🧠 Deep Analysis:")
-        
         # システム成熟度
         if stats['profile']['interactions'] < 50:
             maturity = "Early Stage"
@@ -3182,7 +3068,6 @@ class QuantumChat:
             maturity = "Expert"
             emoji = "🏆"
         print(f"   System Maturity: {emoji} {maturity} ({stats['profile']['interactions']} interactions)")
-        
         # 機能活用度
         ultimate = stats.get('ultimate', {})
         total_advanced = sum(ultimate.values())
@@ -3192,7 +3077,6 @@ class QuantumChat:
             print(f"   Feature Utilization: ⭐ ACTIVE ({total_advanced} advanced operations)")
         else:
             print(f"   Feature Utilization: 💡 EXPLORE MORE ({total_advanced} advanced operations)")
-        
         # 予測精度
         if 'prediction_accuracy' in stats['profile']:
             accuracy = stats['profile']['prediction_accuracy']
@@ -3221,7 +3105,6 @@ class QuantumChat:
         for i, (related, similarity) in enumerate(analogies, 1):
             bar = "█" * int(similarity * 20) + "░" * (20 - int(similarity * 20))
             print(f"   {i:2d}. [{bar}] {similarity:+.3f} - {related}")
-        
         # 最も近い概念との統合を提案
         if len(analogies) >= 2:
             top1, top2 = analogies[0][0], analogies[1][0]
@@ -3240,11 +3123,9 @@ class QuantumChat:
         print("=" * 80)
         trust_score = self.llm.verification_system.get_trust_score()
         print(f"\n📊 Overall Trust Score: {trust_score:.2%}")
-        
         # ビジュアル表現
         bar = "█" * int(trust_score * 40) + "░" * (40 - int(trust_score * 40))
         print(f"   [{bar}]")
-        
         # 評価
         if trust_score > 0.8:
             rating = "🌟 EXCELLENT"
@@ -3260,7 +3141,6 @@ class QuantumChat:
             desc = "System needs more calibration"
         print(f"\n   Rating: {rating}")
         print(f"   {desc}")
-        
         # 検証統計
         records = self.llm.verification_system.records
         if records:
@@ -3270,7 +3150,6 @@ class QuantumChat:
             print(f"   Total Verifications: {total}")
             print(f"   Claims Verified: {verified} ({verified/total:.1%})")
             print(f"   Claims Rejected: {total - verified} ({(total-verified)/total:.1%})")
-            
             # 方法別の統計
             method_stats = defaultdict(list)
             for r in records:
@@ -3335,23 +3214,19 @@ class QuantumChat:
         print("=" * 80)
         stats = self.llm.get_stats()
         suggestions = []
-        
         # 成功率が低い場合
         success_rate = float(stats['system']['success_rate'].strip('%')) / 100
         if success_rate < 0.9:
             suggestions.append("• Consider using more advanced strategies (quantum, genetic)")
-        
         # キャッシュヒット率が低い場合
         cache_rate = float(stats['system']['cache_hit_rate'].strip('%')) / 100
         if cache_rate < 0.3:
             suggestions.append("• Ask similar questions to benefit from caching")
-        
         # 遺伝的進化が有効な場合
         if 'genetic' in stats and stats['genetic']['generation'] > 0:
             best_fitness = stats['genetic']['best_fitness']
             if best_fitness < 0.7:
                 suggestions.append("• Provide more feedback to improve prompt evolution")
-        
         # RLHF
         if 'rlhf' in stats:
             avg_reward = stats['rlhf']['avg_reward']
@@ -3450,7 +3325,6 @@ class QuantumChat:
             print(f"   Average Reward: {avg_reward:.3f}")
             print(f"   Recent Reward (last 10): {recent_reward:.3f}")
             print(f"   Trend: {'📈 Improving' if recent_reward > avg_reward else '📉 Declining' if recent_reward < avg_reward else '➡️ Stable'}")
-        
         # トップポリシー
         policy = self.llm.rlhf.get_policy()
         if policy:
@@ -3515,14 +3389,12 @@ class QuantumChat:
         print(f"\n📊 Activity:")
         print(f"   Total Interactions: {profile['interaction_count']}")
         print(f"   Feedback Given: {len(profile.get('feedback_history', []))}")
-        
         # トップトピック
         topics = sorted(profile['topics'].items(), key=lambda x: x[1], reverse=True)[:10]
         if topics:
             print(f"\n📚 Top Topics:")
             for topic, score in topics:
                 print(f"   • {topic}: {score}")
-        
         # 専門知識
         expertise = [(k, v) for k, v in profile['expertise'].items() if v > 0.3]
         if expertise:
@@ -3531,7 +3403,6 @@ class QuantumChat:
             for topic, level in expertise[:10]:
                 bar = "█" * int(level * 20) + "░" * (20 - int(level * 20))
                 print(f"   {topic:20s} [{bar}] {level:.0%}")
-        
         # 戦略好み
         if profile['strategy_preference']:
             print(f"\n🎯 Strategy Preferences:")
@@ -3593,13 +3464,11 @@ class QuantumChat:
         print(f"   Complexity: {complexity.value}")
         print(f"   Word Count: {len(text.split())}")
         print(f"   Character Count: {len(text)}")
-
         # センチメント
         sentiment = sum(1 for w in ['good', 'great', 'excellent'] if w in text.lower()) - \
                    sum(1 for w in ['bad', 'terrible', 'awful'] if w in text.lower())
         sentiment_label = "Positive" if sentiment > 0 else "Negative" if sentiment < 0 else "Neutral"
         print(f"   Sentiment: {sentiment_label}")
-        
         # 推奨戦略
         strategy = self.llm._select_strategy(intent, complexity)
         print(f"   Recommended Strategy: {strategy.value}")
@@ -3688,7 +3557,6 @@ def main():
     args = parser.parse_args()
     if args.debug:
         logger.logger.setLevel(logging.DEBUG)
-    
     # 設定
     config = SystemConfig(
         model=args.model,
@@ -3697,15 +3565,12 @@ def main():
         swarm=SwarmConfig(enabled=not args.no_swarm),
         rlhf=RLHFConfig(enabled=not args.no_rlhf)
     )
-    
     try:
         # システム初期化
         llm = QuantumLLM(config=config)
-        
         # 状態読み込み
         if args.load:
             llm.load_state(args.load)
-        
         # シングルクエリモード
         if args.query:
             response = llm.query(args.query)
@@ -3715,11 +3580,9 @@ def main():
             print(f"   Strategy: {response.strategy.value if response.strategy else 'N/A'}")
             print(f"   Cost: ${response.cost:.6f}")
             return
-        
         # インタラクティブモード
         chat = QuantumChat(llm)
         chat.run()
-        
         # 終了時保存
         print("\n💾 Saving session...")
         llm.save_state()
