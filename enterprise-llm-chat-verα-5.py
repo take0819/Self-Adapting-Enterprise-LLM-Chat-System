@@ -223,20 +223,16 @@ class RLHFConfig:
 @dataclass
 class SystemConfig:
     """システム設定"""
-    # 基本設定
     model: str = "llama-3.1-8b-instant"
     max_tokens: int = 4000
     temperature: float = 0.7
-    # キャッシュ・DB
     vec_db: bool = True
     vec_dim: int = 384
     cache_ttl: int = 3600
     similarity_threshold: float = 0.92
-    # リトライ
     max_retries: int = 3
     retry_delay: float = 1.0
     max_query_length: int = 15000
-    # コア機能
     adaptive: bool = True
     multi_armed_bandit: bool = True
     long_term_memory: bool = True
