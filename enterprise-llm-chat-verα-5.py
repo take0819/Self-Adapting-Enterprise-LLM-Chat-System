@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Quantum-Enhanced Self-Evolving Enterprise LLM System v3.5γ ULTIMATE
-超高度AI会話システム - 量子インスパイア・自己進化・分散推論・メタ学習
+高度AI会話システム - 量子インスパイア・自己進化・分散推論・メタ学習
 
-🌟 究極の機能:
 - 🔮 Quantum-Inspired Optimization (QAOA風アルゴリズム)
 - 🧬 Genetic Algorithm for Prompt Evolution
 - 🌊 Swarm Intelligence for Multi-Agent Coordination
@@ -134,7 +133,7 @@ class VerificationMethod(str, Enum):
     BLOCKCHAIN_VERIFY = "blockchain_verify"
 
 
-# ==================== 新しいデータ構造 ====================
+# ==================== データ構造 ====================
 
 @dataclass
 class CausalNode:
@@ -266,22 +265,16 @@ class SystemConfig:
     self_reflection: bool = True
     ensemble_learning: bool = True
     metacognition: bool = True
-    
-    # 高度な機能
     tree_of_thoughts: bool = True
     debate_mode: bool = True
     critic_system: bool = True
     confidence_calibration: bool = True
     active_learning: bool = True
     curriculum_learning: bool = True
-    
-    # 超高度な機能
     quantum: QuantumConfig = field(default_factory=QuantumConfig)
     genetic: GeneticConfig = field(default_factory=GeneticConfig)
     swarm: SwarmConfig = field(default_factory=SwarmConfig)
     rlhf: RLHFConfig = field(default_factory=RLHFConfig)
-    
-    # 究極の機能
     adversarial_testing: bool = True
     causal_reasoning: bool = True
     creative_synthesis: bool = True
@@ -330,8 +323,6 @@ class Response:
     completeness_score: float = 0
     factuality_score: float = 0
     novelty_score: float = 0
-    
-    # 高度なメタデータ
     bayesian_confidence: Optional[Tuple[float, float]] = None  # (mean, std)
     hypothesis_tested: List[str] = field(default_factory=list)
     personas_involved: List[str] = field(default_factory=list)
@@ -370,7 +361,7 @@ class Response:
 
 @dataclass
 class Prompt:
-    """進化するプロンプト"""
+    """プロンプト"""
     id: str
     template: str
     category: str
@@ -498,8 +489,7 @@ class KnowledgeEdge:
 # ==================== ユーティリティ ====================
 
 class Logger:
-    """高機能ロガー"""
-    
+    """ロガー"""
     def __init__(self, name: str, level: str = "INFO"):
         self.logger = logging.getLogger(name)
         self.logger.setLevel(getattr(logging, level))
@@ -525,12 +515,11 @@ class Logger:
     def debug(self, msg: str):
         self.logger.debug(msg)
 
-
 logger = Logger('quantum-llm')
 
 
 class VectorDB:
-    """高度なベクトルDB"""
+    """ベクトルDB"""
     
     def __init__(self, dimension: int = 384):
         self.dimension = dimension
@@ -571,7 +560,7 @@ class VectorDB:
         self.vectors.append((id, embedding, metadata))
     
     def search(self, query: str, top_k: int = 5, min_similarity: float = 0.0) -> List[Tuple[str, float, Dict]]:
-        """類似検索（高速化版）"""
+        """類似検索"""
         if not self.vectors:
             return []
         
